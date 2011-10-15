@@ -4,25 +4,26 @@ require 'ruby-debug'
 #   [tag, value, lineNumber, attributes={}]
 #
 class RScript::Lexer
-  IDENTIFIER = /\A([A-z_]+)/
-  WHITESPACE = /\A[^\n\S]+/
-  MULTI_DENT = /\A(?:\n[^\n\S]*)+/
-  NUMBER    =  /\A
-                [\d]+           # any number
-                (?:[\.]\d+)?    # optionally followed by a decimal and any numbers
-                (?:[Ee]\d+)?    # optionally followed by exponential notiation
-               /x
-  SQUOTESTR  = /\A'
-                [^\\']*         # single quote followed by anything but escaped quote
-                (?:\\.[^\\']*)* # followed optionally by escaped dot any anything but escaped quote
-                '               
-               /mx
-  DQUOTESTR  = /\A"
-                [^\\"]*         # single quote followed by anything but escaped quote
-                (?:\\.[^\\"]*)* # followed optionally by escaped dot any anything but escaped quote
-                "               
-               /mx
-
+  IDENTIFIER   = /\A([A-z_]+)/
+  WHITESPACE   = /\A[^\n\S]+/
+  MULTI_DENT   = /\A(?:\n[^\n\S]*)+/
+  NUMBER       =  /\A
+                  [\d]+           # any number
+                  (?:[\.]\d+)?    # optionally followed by a decimal and any numbers
+                  (?:[Ee]\d+)?    # optionally followed by exponential notiation
+                 /x
+  SQUOTESTR    = /\A'
+                  [^\\']*         # single quote followed by anything but escaped quote
+                  (?:\\.[^\\']*)* # followed optionally by escaped dot any anything but escaped quote
+                  '               
+                 /mx
+  DQUOTESTR    = /\A"
+                 [^\\"]*         # single quote followed by anything but escaped quote
+                 (?:\\.[^\\"]*)* # followed optionally by escaped dot any anything but escaped quote
+                 "               
+                 /mx
+  HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
+  COMMENT      = /\A(#+([^\#]*))$/
   
   def initialize(options={})
     @tokens = []
@@ -40,6 +41,7 @@ class RScript::Lexer
     while process_next_chunk.call
       result = identifier_token() || 
         whitespace_token() ||
+        comment_token() ||
         line_token() ||
         number_token() ||
         string_token()
@@ -60,6 +62,23 @@ class RScript::Lexer
     content.scan(what).length
   end
   
+  # Matches single and multi-line comments.
+  def comment_token
+    if md=HERE_COMMENT.match(@chunk)
+      input, comment, body = md.to_a
+      token :HereComment, body
+      token :Terminator, "\n"
+      @line += count(comment, "\n")
+      return comment.length
+    elsif md=COMMENT.match(@chunk)
+      input, comment, body = md.to_a
+      token :Comment, body
+      return comment.length
+    end
+
+    return nil
+  end
+  
   
   def identifier_token
     return nil unless md=IDENTIFIER.match(@chunk)
@@ -75,12 +94,9 @@ class RScript::Lexer
   def line_token
     return nil unless md = MULTI_DENT.match(@chunk)
     indent = md.to_a[0]
-    @line += count(indent, "\n")
-    
     @tokens.last.push newLine: true
-    
     token :Terminator, "\n"
-    
+    @line += count(indent, "\n")
     indent.length
   end
   

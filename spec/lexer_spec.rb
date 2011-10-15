@@ -41,12 +41,12 @@ describe RScript::Lexer do
     
     it { should eq [
       [:Identifier, "foo", 0, newLine: true],
-      [:Terminator, "\n",  1],
+      [:Terminator, "\n",  0],
       [:Identifier, "bar", 1],
       [:Identifier, "baz", 1, newLine: true],
-      [:Terminator, "\n",  2],
+      [:Terminator, "\n",  1],
       [:Identifier, "yaz", 2, newLine: true],
-      [:Terminator, "\n",  3]
+      [:Terminator, "\n",  2]
     ]}
   end
   
@@ -62,9 +62,9 @@ describe RScript::Lexer do
     
     it { should eq [
       [:Identifier, "foo", 0, newLine: true],
-      [:Terminator, "\n",  3],
+      [:Terminator, "\n",  0],
       [:Identifier, "bar", 3, newLine: true],
-      [:Terminator, "\n",  4],
+      [:Terminator, "\n",  3],
     ]}
   end
   
@@ -112,6 +112,45 @@ describe RScript::Lexer do
     it { should eq [
       [:String, %|"foo\n  bar"|, 0]
     ]}
+  end
+  
+  describe "comments" do
+    context "line starting with comment" do
+      let(:code){ "#foo" }
+      
+      it { should eq [
+        [:Comment, "foo", 0]
+      ]}
+    end
+
+    context "line ending with comment" do
+      let(:code){ "foo # bar" }
+
+      it { should eq [
+        [:Identifier, "foo", 0],
+        [:Comment, " bar", 0]
+      ]}
+    end
+    
+    context "multi line comment" do
+      let(:code){ 
+        <<-CODE.gsub(/ +\|/, '')
+          |###
+          |foo
+          |bar
+          |###
+          |baz
+        CODE
+      }
+      
+      it { should eq [
+        [:HereComment, "foo\nbar\n", 0],
+        [:Terminator, "\n", 0],
+        [:Identifier, "baz", 4, newLine: true],
+        [:Terminator, "\n", 4]
+      ]}
+    end
+    
   end
 
 
