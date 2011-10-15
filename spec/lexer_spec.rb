@@ -67,6 +67,16 @@ describe RScript::Lexer do
       [:Terminator, "\n",  4],
     ]}
   end
+  
+  describe "whole, decimal, and exponential numbers" do
+    let(:code){ "1 2.58 9e11" }
+    
+    it { should eq [
+      [:Number, "1", 0],
+      [:Number, "2.58", 0],
+      [:Number, "9e11", 0]
+    ]}
+  end
 
 end
 

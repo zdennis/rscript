@@ -7,6 +7,11 @@ class RScript::Lexer
   IDENTIFIER = /^([A-z_]+)/
   WHITESPACE = /\A[^\n\S]+/
   MULTI_DENT = /\A(?:\n[^\n\S]*)+/
+  NUMBER    =  /\A
+                [\d]+         # any number
+                (?:[\.]\d+)?  # optionally followed by a decimal and any numbers
+                (?:[Ee]\d+)?  # optionally followed by exponential notiation
+              /x
   
   def initialize
     @tokens = []
@@ -15,17 +20,16 @@ class RScript::Lexer
   def tokenize(code)
     @line = 0
 
-    c = 0
     i = 0
     process_next_chunk = -> { @chunk = code.slice(i..-1) ; @chunk != "" }
+
     while process_next_chunk.call
       result = identifier_token() || 
         whitespace_token() ||
-        line_token()
-
+        line_token() ||
+        number_token()
+        
       i += result.to_i
-      c+=1
-      raise "fail" if c == 100
     end
     
     @tokens
@@ -60,6 +64,14 @@ class RScript::Lexer
     token :Terminator, "\n"
     
     indent.length
+  end
+  
+  # Matches numbers, including decimals, and exponential notation.
+  def number_token
+    return nil unless md = NUMBER.match(@chunk)
+    number = md.to_a[0]
+    token :Number, number
+    number.length
   end
   
   # Matches and consumes non-meaningful whitespace.
