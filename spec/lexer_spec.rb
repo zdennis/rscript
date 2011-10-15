@@ -18,6 +18,17 @@ describe RScript::Lexer do
       [:Identifier, "baz", 0]
     ]}
   end
+
+  describe "multiple spaces are consumed between tokens" do
+    let(:code) { "foo      bar     baz" }
+    
+    it { should eq [
+      [:Identifier, "foo", 0],
+      [:Identifier, "bar", 0],
+      [:Identifier, "baz", 0]
+    ]}
+  end
+
   
   describe "multiple tokens on multiple lines" do
     let(:code) {
