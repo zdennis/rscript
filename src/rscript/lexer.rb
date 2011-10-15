@@ -4,7 +4,7 @@ require 'ruby-debug'
 #   [tag, value, lineNumber, attributes={}]
 #
 class RScript::Lexer
-  IDENTIFIER = /^([A-z_]+)/
+  IDENTIFIER = /\A([A-z_]+)/
   WHITESPACE = /\A[^\n\S]+/
   MULTI_DENT = /\A(?:\n[^\n\S]*)+/
   NUMBER    =  /\A
@@ -12,11 +12,11 @@ class RScript::Lexer
                 (?:[\.]\d+)?    # optionally followed by a decimal and any numbers
                 (?:[Ee]\d+)?    # optionally followed by exponential notiation
                /x
-  SIMPLESTR  = /^'
+  SIMPLESTR  = /\A'
                 [^\\']*         # single quote followed by anything but escaped quote
                 (?:\\.[^\\']*)* # followed optionally by escaped dot any anything but escaped quote
                 '               
-               /x
+               /mx
   
   def initialize(options={})
     @tokens = []

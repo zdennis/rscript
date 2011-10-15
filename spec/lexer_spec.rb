@@ -88,5 +88,13 @@ describe RScript::Lexer do
     ]}
   end
 
+  describe "multiline single quoted strings" do
+    let(:code) { %|'foo\nbar'| }
+    
+    it { should eq [
+      [:String, "'foo\nbar'", 0]
+    ]}
+  end
+
 end
 
