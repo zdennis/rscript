@@ -152,7 +152,7 @@ describe RScript::Lexer do
     end
   end
   
-  describe "indenting" do
+  describe "indentation" do
     context "single scope" do
       let(:code){
         <<-CODE.gsub(/ +\|/, '')
@@ -174,7 +174,7 @@ describe RScript::Lexer do
       ]}
     end
 
-    context "multiple scopes" do
+    context "multiple scopes in" do
       let(:code){
         <<-CODE.gsub(/ +\|/, '')
           |foo
@@ -197,6 +197,57 @@ describe RScript::Lexer do
       ]}
     end
 
+    context "in/out multiple scopes" do
+      let(:code){
+        <<-CODE.gsub(/ +\|/, '')
+          |aaa
+          |  baa
+          |
+          |abb
+          |  bbb
+          |    caa
+          |    cbb
+          |  bcc
+          |    ccc
+          |acc
+          |add
+        CODE
+      }
+      
+      it { should eq [
+        [:Identifier, "aaa", 0, newLine: true],
+        [:Terminator, "\n", 0],
+        [:Indent, 2, 1],
+        [:Identifier, "baa", 1, newLine: true],
+        [:Terminator, "\n", 1],
+
+        [:Outdent, 2, 3],
+        [:Identifier, "abb", 3, newLine: true],
+        [:Terminator, "\n", 3],
+        [:Indent, 2, 4],
+        [:Identifier, "bbb", 4, newLine: true],
+        [:Terminator, "\n", 4],
+        [:Indent, 2, 5],
+        [:Identifier, "caa", 5, newLine: true],
+        [:Terminator, "\n", 5],
+        [:Identifier, "cbb", 6, newLine: true],
+        [:Terminator, "\n", 6],
+
+        [:Outdent, 2, 7],
+        [:Identifier, "bcc", 7, newLine: true],
+        [:Terminator, "\n", 7],
+        [:Indent, 2, 8],
+        [:Identifier, "ccc", 8, newLine: true],
+        [:Terminator, "\n", 8],
+
+        [:Outdent, 2, 9],
+        [:Outdent, 2, 9],
+        [:Identifier, "acc", 9, newLine: true],
+        [:Terminator, "\n", 9],
+        [:Identifier, "add", 10, newLine: true],
+        [:Terminator, "\n", 10]
+      ]}
+    end
   end
 
 
