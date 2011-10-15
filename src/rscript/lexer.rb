@@ -32,6 +32,8 @@ class RScript::Lexer
   
   def tokenize(code)
     @line = 0
+    @indents = []
+    @indent = 0
 
     count = 0
 
@@ -90,14 +92,42 @@ class RScript::Lexer
     input.length
   end
   
-  # Matches newlines, indents, and outdents. Determines which is which.
+  # Matches num_newlines, indents, and outdents. Determines which is which.
   def line_token
     return nil unless md = MULTI_DENT.match(@chunk)
-    indent = md.to_a[0]
+
     @tokens.last.push newLine: true
     token :Terminator, "\n"
-    @line += count(indent, "\n")
+
+    indent = md.to_a[0]
+    num_newlines = count(indent, "\n")
+    spaces = indent.length - num_newlines
+
+    @line += num_newlines
+
+    movement = spaces - @indent
+    if movement > 0
+      @indents.push movement
+      token :Indent, movement
+    elsif movement < 0
+      outdent_token movement.abs, num_newlines
+    end
+
+    @indent += movement
     indent.length
+  end
+  
+  def outdent_token(movement, num_newlines)
+    while movement > 0
+      if indented=@indents.last
+        movement -= indented
+      else
+        raise "Lexer error. No indentation to outdent."
+        # movement = 0
+      end
+      
+      token :Outdent, indented
+    end
   end
   
   # Matches numbers, including decimals, and exponential notation.

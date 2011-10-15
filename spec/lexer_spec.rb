@@ -3,7 +3,7 @@ require 'spec_helper'
 describe RScript::Lexer do
   subject { described_class.new(:infinite => 100).tokenize(code) }
 
-  describe "single identifier on a single line" do
+  describe "single token on a single line" do
     let(:code) { "foo" }
     
     it { should eq [[:Identifier, "foo", 0]] }
@@ -32,10 +32,10 @@ describe RScript::Lexer do
   
   describe "multiple tokens on multiple lines" do
     let(:code) {
-      <<-CODE
-        foo
-        bar baz
-        yaz
+      <<-CODE.gsub(/ +\|/, '')
+        |foo
+        |bar baz
+        |yaz
       CODE
     }
     
@@ -52,11 +52,11 @@ describe RScript::Lexer do
   
   describe "multiple new lines are consumed" do
     let(:code) {
-      <<-CODE
-        foo
-        
-        
-        bar
+      <<-CODE.gsub(/ +\|/, '')
+        |foo
+        |
+        |
+        |bar
       CODE
     }
     
@@ -150,7 +150,53 @@ describe RScript::Lexer do
         [:Terminator, "\n", 4]
       ]}
     end
-    
+  end
+  
+  describe "indenting" do
+    context "single scope" do
+      let(:code){
+        <<-CODE.gsub(/ +\|/, '')
+          |foo
+          |  bar
+          |  baz
+        CODE
+      }
+      
+      it { should eq [
+        [:Identifier, "foo", 0, newLine: true],
+        [:Terminator, "\n", 0],
+        [:Indent, 2, 1],
+        [:Identifier, "bar", 1, newLine: true],
+        [:Terminator, "\n", 1],
+        [:Identifier, "baz", 2, newLine: true],
+        [:Terminator, "\n", 2],
+        [:Outdent, 2, 3]
+      ]}
+    end
+
+    context "multiple scopes" do
+      let(:code){
+        <<-CODE.gsub(/ +\|/, '')
+          |foo
+          |  bar
+          |    baz
+        CODE
+      }
+      
+      it { should eq [
+        [:Identifier, "foo", 0, newLine: true],
+        [:Terminator, "\n", 0],
+        [:Indent, 2, 1],
+        [:Identifier, "bar", 1, newLine: true],
+        [:Terminator, "\n", 1],
+        [:Indent, 2, 2],
+        [:Identifier, "baz", 2, newLine: true],
+        [:Terminator, "\n", 2],
+        [:Outdent, 2, 3],
+        [:Outdent, 2, 3],
+      ]}
+    end
+
   end
 
 
