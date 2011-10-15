@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe RScript::Lexer do
-  subject { described_class.new.tokenize(code) }
+  subject { described_class.new(:infinite => 100).tokenize(code) }
 
   describe "single identifier on a single line" do
     let(:code) { "foo" }
@@ -75,6 +75,16 @@ describe RScript::Lexer do
       [:Number, "1", 0],
       [:Number, "2.58", 0],
       [:Number, "9e11", 0]
+    ]}
+  end
+  
+  describe "single quoted strings" do
+    let(:code){ %|'foo' 'bar' 'baz \\' yaz'| }
+    
+    it { should eq [
+      [:String, "'foo'", 0],
+      [:String, "'bar'", 0],
+      [:String, "'baz \\' yaz'", 0]
     ]}
   end
 

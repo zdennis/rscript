@@ -8,17 +8,25 @@ class RScript::Lexer
   WHITESPACE = /\A[^\n\S]+/
   MULTI_DENT = /\A(?:\n[^\n\S]*)+/
   NUMBER    =  /\A
-                [\d]+         # any number
-                (?:[\.]\d+)?  # optionally followed by a decimal and any numbers
-                (?:[Ee]\d+)?  # optionally followed by exponential notiation
-              /x
+                [\d]+           # any number
+                (?:[\.]\d+)?    # optionally followed by a decimal and any numbers
+                (?:[Ee]\d+)?    # optionally followed by exponential notiation
+               /x
+  SIMPLESTR  = /^'
+                [^\\']*         # single quote followed by anything but escaped quote
+                (?:\\.[^\\']*)* # followed optionally by escaped dot any anything but escaped quote
+                '               
+               /x
   
-  def initialize
+  def initialize(options={})
     @tokens = []
+    @infinite = options[:infinite]
   end
   
   def tokenize(code)
     @line = 0
+
+    count = 0
 
     i = 0
     process_next_chunk = -> { @chunk = code.slice(i..-1) ; @chunk != "" }
@@ -27,7 +35,11 @@ class RScript::Lexer
       result = identifier_token() || 
         whitespace_token() ||
         line_token() ||
-        number_token()
+        number_token() ||
+        string_token()
+      
+      count += 1
+      raise "Infinite loop (#{@infinite})" if @infinite && @infinite == count
         
       i += result.to_i
     end
@@ -72,6 +84,19 @@ class RScript::Lexer
     number = md.to_a[0]
     token :Number, number
     number.length
+  end
+  
+  # Matches single quoted strings
+  def string_token
+    case @chunk[0]
+    when "'"
+      return nil unless md =SIMPLESTR.match(@chunk)
+      string = md.to_a[0]
+      token :String, string
+      return string.length
+    else
+      return nil
+    end
   end
   
   # Matches and consumes non-meaningful whitespace.
