@@ -12,11 +12,17 @@ class RScript::Lexer
                 (?:[\.]\d+)?    # optionally followed by a decimal and any numbers
                 (?:[Ee]\d+)?    # optionally followed by exponential notiation
                /x
-  SIMPLESTR  = /\A'
+  SQUOTESTR  = /\A'
                 [^\\']*         # single quote followed by anything but escaped quote
                 (?:\\.[^\\']*)* # followed optionally by escaped dot any anything but escaped quote
                 '               
                /mx
+  DQUOTESTR  = /\A"
+                [^\\"]*         # single quote followed by anything but escaped quote
+                (?:\\.[^\\"]*)* # followed optionally by escaped dot any anything but escaped quote
+                "               
+               /mx
+
   
   def initialize(options={})
     @tokens = []
@@ -90,7 +96,12 @@ class RScript::Lexer
   def string_token
     case @chunk[0]
     when "'"
-      return nil unless md =SIMPLESTR.match(@chunk)
+      return nil unless md = SQUOTESTR.match(@chunk)
+      string = md.to_a[0]
+      token :String, string
+      return string.length
+    when '"'
+      return nil unless md = DQUOTESTR.match(@chunk)
       string = md.to_a[0]
       token :String, string
       return string.length

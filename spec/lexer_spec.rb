@@ -89,12 +89,31 @@ describe RScript::Lexer do
   end
 
   describe "multiline single quoted strings" do
-    let(:code) { %|'foo\nbar'| }
+    let(:code) { %|'foo\n  bar'| }
     
     it { should eq [
-      [:String, "'foo\nbar'", 0]
+      [:String, "'foo\n  bar'", 0]
     ]}
   end
+
+  describe "basic double quoted strings" do
+    let(:code){ %|"foo" "bar" "baz \\" yaz"| }
+    
+    it { should eq [
+      [:String, '"foo"', 0],
+      [:String, '"bar"', 0],
+      [:String, '"baz \\" yaz"', 0]
+    ]}
+  end
+
+  describe "basic multiline double quoted strings" do
+    let(:code) { %|"foo\n  bar"| }
+    
+    it { should eq [
+      [:String, %|"foo\n  bar"|, 0]
+    ]}
+  end
+
 
 end
 
