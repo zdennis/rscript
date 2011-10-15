@@ -250,6 +250,27 @@ describe RScript::Lexer do
     end
   end
 
+  describe "operators" do
+    describe "mathematical" do
+      describe "+ - * / %" do
+        let(:code){ "1 + 2 - 3 * 4 / 5 % 6" }
+      
+        it { should eq [
+          [:Number, "1", 0],
+          [:Operator, "+", 0],
+          [:Number, "2", 0],
+          [:Operator, "-", 0],
+          [:Number, "3", 0],
+          [:Operator, "*", 0],
+          [:Number, "4", 0],
+          [:Operator, "/", 0],
+          [:Number, "5", 0],
+          [:Operator, "%", 0],
+          [:Number, "6", 0]
+        ]}
+      end
+    end
 
+  end
 end
 

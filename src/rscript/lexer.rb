@@ -24,6 +24,9 @@ class RScript::Lexer
                  /mx
   HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
   COMMENT      = /\A(#+([^\#]*))$/
+  OPERATOR     = /\A (?:
+                  [+-\/*%]      # arithmetic operators
+                 )/x
   
   def initialize(options={})
     @tokens = []
@@ -46,10 +49,11 @@ class RScript::Lexer
         comment_token() ||
         line_token() ||
         number_token() ||
-        string_token()
+        string_token() ||
+        literal_token()
       
       count += 1
-      raise "Infinite loop (#{@infinite})" if @infinite && @infinite == count
+      raise "Infinite loop (#{@infinite}) on unknown: #{@chunk}" if @infinite && @infinite == count
         
       i += result.to_i
     end
@@ -81,6 +85,12 @@ class RScript::Lexer
     return nil
   end
   
+  def literal_token
+    return nil unless md=OPERATOR.match(@chunk)
+    operator = md.to_a[0]
+    token :Operator, operator
+    return operator.length
+  end
   
   def identifier_token
     return nil unless md=IDENTIFIER.match(@chunk)
