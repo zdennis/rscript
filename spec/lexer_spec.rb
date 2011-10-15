@@ -50,7 +50,7 @@ describe RScript::Lexer do
     ]}
   end
   
-  describe "consuming multiple new lines" do
+  describe "multiple new lines are consumed" do
     let(:code) {
       <<-CODE
         foo
