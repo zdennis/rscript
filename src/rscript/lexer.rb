@@ -55,6 +55,8 @@ class RScript::Lexer
     indent = md.to_a[0]
     @line += count(indent, "\n")
     
+    @tokens.last.push newLine: true
+    
     token :Terminator, "\n"
     
     indent.length
