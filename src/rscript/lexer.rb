@@ -28,7 +28,7 @@ class RScript::Lexer
                   (?: [+-\/*%]=                 # compound assignment
                     | \*\*                      # math to the power of
                     | [+-\/*%]                  # arithmetic
-                    | [\(\)]                    # parentheses
+                    | [\(\)] | [\[\]]           # parens, brackets
                     | << | >>                   # bit-shift
                     | != | <= | >= | == | < | > # comparison
                     | [=]                       # assignment

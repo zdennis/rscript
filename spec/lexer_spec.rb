@@ -342,24 +342,26 @@ describe RScript::Lexer do
       end
     end
 
-    describe "parentheses" do
-      describe "empty parens: ()" do
-        let(:code){ "()" }
+    describe "pairs" do
+      [["(", ")"], ["[", "]"]].each do |pair|
+        describe "empty pair: #{pair.join}" do
+          let(:code){ pair.join }
 
-        it { should eq [
-          [:Operator, "(", 0],
-          [:Operator, ")", 0]
-        ]}
-      end
+          it { should eq [
+            [:Operator, pair.first, 0],
+            [:Operator, pair.last, 0]
+          ]}
+        end
       
-      describe "nonempty parens: (...)" do
-        let(:code){ "(1)" }
+        describe "nonempty pair: #{pair.join('...')}" do
+          let(:code){ pair.join("1") }
 
-        it { should eq [
-          [:Operator, "(", 0],
-          [:Number, "1", 0],
-          [:Operator, ")", 0]
-        ]}
+          it { should eq [
+            [:Operator, pair.first, 0],
+            [:Number, "1", 0],
+            [:Operator, pair.last, 0]
+          ]}
+        end
       end
     end
 
@@ -492,7 +494,7 @@ describe RScript::Lexer do
 
             it { should eq [
               [:Unary, operator, 0],
-              [:Identifier, "a", 0],
+              [:Identifier, "a", 0]
             ]}
           end
         end
