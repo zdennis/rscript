@@ -26,6 +26,7 @@ class RScript::Lexer
   COMMENT      = /\A(#+([^\#]*))$/
   OPERATOR     = /\A 
                   (?: [+-\/*%]=   # compound assignment operators
+                    | \*\*        # math to the power of
                     | [+-\/*%]    # arithmetic operators
                     | [\(\)]      # parentheses
                     | [=]         # assignment

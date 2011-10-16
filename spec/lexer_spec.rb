@@ -268,6 +268,28 @@ describe RScript::Lexer do
       ]}
     end
 
+    describe "mathematical to the power of: **" do
+      context "no spaces" do
+        let(:code){ "1**2" }
+      
+        it { should eq [
+          [:Number, "1", 0],
+          [:Operator, "**", 0],
+          [:Number, "2", 0]
+        ]}
+      end
+      
+      context "with spaces" do
+        let(:code){ "1 ** 2" }
+      
+        it { should eq [
+          [:Number, "1", 0],
+          [:Operator, "**", 0],
+          [:Number, "2", 0]
+        ]}
+      end
+    end
+
     describe "parentheses" do
       describe "empty parens: ()" do
         let(:code){ "()" }
@@ -335,7 +357,6 @@ describe RScript::Lexer do
       end
 
     end
-    
   end
 
 end
