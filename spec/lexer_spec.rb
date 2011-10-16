@@ -484,6 +484,20 @@ describe RScript::Lexer do
       end
     end
     
+    describe "unary" do
+      %w( - + ! ).each do |operator|
+        describe operator do
+          context "immediately before identifier" do
+            let(:code){ "#{operator}a" }
+
+            it { should eq [
+              [:Unary, operator, 0],
+              [:Identifier, "a", 0],
+            ]}
+          end
+        end
+      end
+    end
   end
 
   describe "keywords" do

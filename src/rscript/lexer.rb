@@ -33,6 +33,7 @@ class RScript::Lexer
                     | != | <= | >= | == | < | > # comparison
                     | [=]                       # assignment
                     | \|\| | && | & | \| | \^   # logic
+                    | \!                        # remainder of unary operators
                   )/x
                  
   ASSIGNMENT_OPERATORS = %w( = )
@@ -40,6 +41,7 @@ class RScript::Lexer
   COMPARISON_OPERATORS = %w( < <= == >= > != )
   LOGIC_OPERATORS = %w( || && | & ^ )
   SHIFT_OPERATORS = %w( << >> )
+  UNARY_OPERATORS = %w( - + ! )
   
   RESERVED_IDENTIFIER_TAGS = {
     class:  :Class,
@@ -89,6 +91,10 @@ class RScript::Lexer
     content.scan(what).length
   end
   
+  def peek
+    @chunk[1]
+  end
+  
   # Matches single and multi-line comments.
   def comment_token
     if md=HERE_COMMENT.match(@chunk)
@@ -120,6 +126,8 @@ class RScript::Lexer
       token :Logic, operator
     elsif SHIFT_OPERATORS.include?(operator)
       token :Shift, operator
+    elsif UNARY_OPERATORS.include?(operator) && (peek =~ NUMBER || peek =~ IDENTIFIER)
+      token :Unary, operator
     else
       token :Operator, operator
     end
