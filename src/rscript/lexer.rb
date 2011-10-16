@@ -41,17 +41,20 @@ class RScript::Lexer
   LOGIC_OPERATORS = %w( || && | & ^ )
   SHIFT_OPERATORS = %w( << >> )
   
-  IDENTIFIER_TAGS = {
-    class: :Class,
-    def:   :Method
+  RESERVED_IDENTIFIER_TAGS = {
+    class:  :Class,
+    def:    :Method,
+    if:     :Conditional,
+    unless: :Conditional,
+    else:   :Conditional
   }
   
   def initialize(options={})
-    @tokens = []
     @infinite = options[:infinite]
   end
   
   def tokenize(code)
+    @tokens = []
     @line = 0
     @indents = []
     @indent = 0
@@ -126,7 +129,7 @@ class RScript::Lexer
   def identifier_token
     return nil unless md=IDENTIFIER.match(@chunk)
     input, id = md.to_a
-    tag = IDENTIFIER_TAGS[id.to_sym] || :Identifier
+    tag = RESERVED_IDENTIFIER_TAGS[id.to_sym] || :Identifier
     token tag, id
     input.length
   end

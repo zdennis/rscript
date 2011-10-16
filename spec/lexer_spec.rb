@@ -504,6 +504,18 @@ describe RScript::Lexer do
         [:Identifier, "foo", 0]
       ]}
     end
+    
+    describe "conditionals" do
+      %w( if unless else ).each do |keyword|
+        describe keyword do
+          let(:code){ keyword }
+        
+          it { should eq [
+            [:Conditional, keyword, 0]
+          ]}
+        end
+      end
+    end
   end
 end
 
