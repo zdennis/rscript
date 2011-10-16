@@ -29,6 +29,7 @@ class RScript::Lexer
                     | \*\*                      # math to the power of
                     | [+-\/*%]                  # arithmetic
                     | [\(\)]                    # parentheses
+                    | << | >>                   # bit-shift
                     | != | <= | >= | == | < | > # comparison
                     | [=]                       # assignment
                     | \|\| | && | & | \| | \^   # logic
@@ -38,6 +39,7 @@ class RScript::Lexer
   COMPOUND_ASSIGNMENT_OPERATORS = %w( += -= /= *= )
   COMPARISON_OPERATORS = %w( < <= == >= > != )
   LOGIC_OPERATORS = %w( || && | & ^ )
+  SHIFT_OPERATORS = %w( << >> )
   
   IDENTIFIER_TAGS = {
     class: :Class
@@ -112,6 +114,8 @@ class RScript::Lexer
       token :Comparison, operator
     elsif LOGIC_OPERATORS.include?(operator)
       token :Logic, operator
+    elsif SHIFT_OPERATORS.include?(operator)
+      token :Shift, operator
     else
       token :Operator, operator
     end
