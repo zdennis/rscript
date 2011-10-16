@@ -357,7 +357,40 @@ describe RScript::Lexer do
       end
 
     end
+ 
+    describe "comparison" do
+      %w( < <= == > >= ).each do |operator|
+        describe operator do
+          context "with no spaces" do
+            let(:code){ "a#{operator}1" }
+            it { should eq [
+              [:Identifier, "a", 0],
+              [:Comparison, operator, 0],
+              [:Number, "1", 0]
+            ]}
+          end
+
+          context "with spaces" do
+            let(:code){ "a #{operator} 1" }
+            it { should eq [
+              [:Identifier, "a", 0],
+              [:Comparison, operator, 0],
+              [:Number, "1", 0]
+            ]}
+          end
+        end
+      end
+    end
   end
 
+  describe "keywords" do
+    describe "class" do
+      let(:code){ "class" }
+      
+      it { should eq [
+        [:Class, "class", 0]
+      ]}
+    end
+  end
 end
 

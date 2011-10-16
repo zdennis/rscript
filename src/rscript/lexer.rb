@@ -25,15 +25,21 @@ class RScript::Lexer
   HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
   COMMENT      = /\A(#+([^\#]*))$/
   OPERATOR     = /\A 
-                  (?: [+-\/*%]=   # compound assignment operators
-                    | \*\*        # math to the power of
-                    | [+-\/*%]    # arithmetic operators
-                    | [\(\)]      # parentheses
-                    | [=]         # assignment
+                  (?: [+-\/*%]=         # compound assignment
+                    | \*\*              # math to the power of
+                    | [+-\/*%]          # arithmetic
+                    | [\(\)]            # parentheses
+                    | <= | >= | == | < | > # comparison
+                    | [=]               # assignment
                   )/x
-                  
+                 
   ASSIGNMENT_OPERATORS = %w( = )
   COMPOUND_ASSIGNMENT_OPERATORS = %w( += -= /= *= )
+  COMPARISON_OPERATORS = %w( < <= == >= > )
+  
+  IDENTIFIER_TAGS = {
+    class: :Class
+  }
   
   def initialize(options={})
     @tokens = []
@@ -95,11 +101,13 @@ class RScript::Lexer
   def literal_token
     return nil unless md=OPERATOR.match(@chunk)
     operator = md.to_a[0]
-    
+
     if COMPOUND_ASSIGNMENT_OPERATORS.include?(operator)
       token :CompoundAssign, operator
     elsif ASSIGNMENT_OPERATORS.include?(operator)
       token :Assign, operator
+    elsif COMPARISON_OPERATORS.include?(operator)
+      token :Comparison, operator
     else
       token :Operator, operator
     end
@@ -109,10 +117,8 @@ class RScript::Lexer
   def identifier_token
     return nil unless md=IDENTIFIER.match(@chunk)
     input, id = md.to_a
-    
-    tag = :Identifier
+    tag = IDENTIFIER_TAGS[id.to_sym] || :Identifier
     token tag, id
-
     input.length
   end
   
