@@ -29,7 +29,6 @@ describe RScript::Lexer do
     ]}
   end
 
-  
   describe "multiple tokens on multiple lines" do
     let(:code) {
       <<-CODE.gsub(/ +\|/, '')
@@ -289,6 +288,55 @@ describe RScript::Lexer do
         ]}
       end
     end
+
+    describe "assignment" do
+      describe "simple assignment" do
+        context "with no spaces" do
+          let(:code){ "a=1" }
+          it { should eq [
+            [:Identifier, "a", 0],
+            [:Operator, "=", 0],
+            [:Number, "1", 0]
+          ]}
+        end
+
+        context "with spaces" do
+          let(:code){ "a = 1" }
+          it { should eq [
+            [:Identifier, "a", 0],
+            [:Operator, "=", 0],
+            [:Number, "1", 0]
+          ]}
+        end
+      end
+
+      describe "compound assignment" do
+        %w( += -= *= /= ).each do |operator|
+          describe operator do
+            context "with no spaces" do
+              let(:code){ "a#{operator}1" }
+              it { should eq [
+                [:Identifier, "a", 0],
+                [:CompoundAssign, operator, 0],
+                [:Number, "1", 0]
+              ]}
+            end
+
+            context "with spaces" do
+              let(:code){ "a #{operator} 1" }
+              it { should eq [
+                [:Identifier, "a", 0],
+                [:CompoundAssign, operator, 0],
+                [:Number, "1", 0]
+              ]}
+            end
+          end
+        end
+      end
+
+    end
+    
   end
+
 end
 

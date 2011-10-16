@@ -25,9 +25,13 @@ class RScript::Lexer
   HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
   COMMENT      = /\A(#+([^\#]*))$/
   OPERATOR     = /\A 
-                  (?: [+-\/*%]    # arithmetic operators
+                  (?: [+-\/*%]=   # compound assignment operators
+                    | [+-\/*%]    # arithmetic operators
                     | [\(\)]      # parentheses
+                    | [=]         # assignment
                   )/x
+                  
+  COMPOUND_ASSIGNMENT_OPERATORS = %w( += -= /= *= )
   
   def initialize(options={})
     @tokens = []
@@ -89,7 +93,12 @@ class RScript::Lexer
   def literal_token
     return nil unless md=OPERATOR.match(@chunk)
     operator = md.to_a[0]
-    token :Operator, operator
+    
+    if COMPOUND_ASSIGNMENT_OPERATORS.include?(operator)
+      token :CompoundAssign, operator
+    else
+      token :Operator, operator
+    end
     return operator.length
   end
   
