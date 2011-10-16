@@ -436,12 +436,23 @@ describe RScript::Lexer do
 
   describe "keywords" do
     describe "class" do
-      let(:code){ "class" }
+      let(:code){ "class Foo" }
       
       it { should eq [
-        [:Class, "class", 0]
+        [:Class, "class", 0],
+        [:Identifier, "Foo", 0]
       ]}
     end
+
+    describe "def" do
+      let(:code){ "def foo" }
+      
+      it { should eq [
+        [:Method, "def", 0],
+        [:Identifier, "foo", 0]
+      ]}
+    end
+
   end
 end
 

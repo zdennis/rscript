@@ -42,7 +42,8 @@ class RScript::Lexer
   SHIFT_OPERATORS = %w( << >> )
   
   IDENTIFIER_TAGS = {
-    class: :Class
+    class: :Class,
+    def:   :Method
   }
   
   def initialize(options={})
