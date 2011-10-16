@@ -251,26 +251,44 @@ describe RScript::Lexer do
   end
 
   describe "operators" do
-    describe "mathematical" do
-      describe "+ - * / %" do
-        let(:code){ "1 + 2 - 3 * 4 / 5 % 6" }
-      
+    describe "mathematical: + - * / %" do
+      let(:code){ "1 + 2 - 3 * 4 / 5 % 6" }
+    
+      it { should eq [
+        [:Number, "1", 0],
+        [:Operator, "+", 0],
+        [:Number, "2", 0],
+        [:Operator, "-", 0],
+        [:Number, "3", 0],
+        [:Operator, "*", 0],
+        [:Number, "4", 0],
+        [:Operator, "/", 0],
+        [:Number, "5", 0],
+        [:Operator, "%", 0],
+        [:Number, "6", 0]
+      ]}
+    end
+
+    describe "parentheses" do
+      describe "empty parens: ()" do
+        let(:code){ "()" }
+
         it { should eq [
+          [:Operator, "(", 0],
+          [:Operator, ")", 0]
+        ]}
+      end
+      
+      describe "nonempty parens: (...)" do
+        let(:code){ "(1)" }
+
+        it { should eq [
+          [:Operator, "(", 0],
           [:Number, "1", 0],
-          [:Operator, "+", 0],
-          [:Number, "2", 0],
-          [:Operator, "-", 0],
-          [:Number, "3", 0],
-          [:Operator, "*", 0],
-          [:Number, "4", 0],
-          [:Operator, "/", 0],
-          [:Number, "5", 0],
-          [:Operator, "%", 0],
-          [:Number, "6", 0]
+          [:Operator, ")", 0]
         ]}
       end
     end
-
   end
 end
 

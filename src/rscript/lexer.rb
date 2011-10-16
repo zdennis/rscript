@@ -18,15 +18,16 @@ class RScript::Lexer
                   '               
                  /mx
   DQUOTESTR    = /\A"
-                 [^\\"]*         # single quote followed by anything but escaped quote
-                 (?:\\.[^\\"]*)* # followed optionally by escaped dot any anything but escaped quote
+                 [^\\"]*          # single quote followed by anything but escaped quote
+                 (?:\\.[^\\"]*)*  # followed optionally by escaped dot any anything but escaped quote
                  "               
                  /mx
   HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
   COMMENT      = /\A(#+([^\#]*))$/
-  OPERATOR     = /\A (?:
-                  [+-\/*%]      # arithmetic operators
-                 )/x
+  OPERATOR     = /\A 
+                  (?: [+-\/*%]    # arithmetic operators
+                    | [\(\)]      # parentheses
+                  )/x
   
   def initialize(options={})
     @tokens = []
