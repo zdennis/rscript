@@ -295,7 +295,7 @@ describe RScript::Lexer do
           let(:code){ "a=1" }
           it { should eq [
             [:Identifier, "a", 0],
-            [:Operator, "=", 0],
+            [:Assign, "=", 0],
             [:Number, "1", 0]
           ]}
         end
@@ -304,7 +304,7 @@ describe RScript::Lexer do
           let(:code){ "a = 1" }
           it { should eq [
             [:Identifier, "a", 0],
-            [:Operator, "=", 0],
+            [:Assign, "=", 0],
             [:Number, "1", 0]
           ]}
         end

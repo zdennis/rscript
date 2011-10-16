@@ -31,6 +31,7 @@ class RScript::Lexer
                     | [=]         # assignment
                   )/x
                   
+  ASSIGNMENT_OPERATORS = %w( = )
   COMPOUND_ASSIGNMENT_OPERATORS = %w( += -= /= *= )
   
   def initialize(options={})
@@ -96,6 +97,8 @@ class RScript::Lexer
     
     if COMPOUND_ASSIGNMENT_OPERATORS.include?(operator)
       token :CompoundAssign, operator
+    elsif ASSIGNMENT_OPERATORS.include?(operator)
+      token :Assign, operator
     else
       token :Operator, operator
     end
