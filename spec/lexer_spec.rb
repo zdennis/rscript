@@ -3,70 +3,122 @@ require 'spec_helper'
 describe RScript::Lexer do
   subject { described_class.new(:infinite => 100).tokenize(code) }
 
-  describe "single token on a single line" do
-    let(:code) { "foo" }
+  describe "identifiers" do
+    describe "naming: starts with lower-case alpha" do
+      let(:code) { "a boo" }
+      it { should eq [
+        [:Identifier, "a",   0],
+        [:Identifier, "boo", 0]
+      ]}
+    end
+
+    describe "naming: starts with upper-case alpha" do
+      let(:code) { "A Boo" }
+      it { should eq [
+        [:Identifier, "A",   0],
+        [:Identifier, "Boo", 0]
+      ]}
+    end
+
+    describe "naming: combines lower/upper-case alpha" do
+      let(:code) { "AbbA FooBar" }
+      it { should eq [
+        [:Identifier, "AbbA",   0],
+        [:Identifier, "FooBar", 0]
+      ]}
+    end
+
+    describe "naming: cannot start with a number" do
+      let(:code) { "9a" }
+      it { should eq [
+        [:Number, "9",     0],
+        [:Identifier, "a", 0]
+      ]}
+    end
+
+    describe "naming: can include numbrers" do
+      let(:code) { "a9b ab9" }
+      it { should eq [
+        [:Identifier, "a9b", 0],
+        [:Identifier, "ab9", 0]
+      ]}
+    end
+
+    describe "naming: can start, include, and end with _" do
+      let(:code) { "_a a_9 a9_ a_b_c" }
+      it { should eq [
+        [:Identifier, "_a",    0],
+        [:Identifier, "a_9",   0],
+        [:Identifier, "a9_",   0],
+        [:Identifier, "a_b_c", 0]
+      ]}
+    end
     
-    it { should eq [[:Identifier, "foo", 0]] }
-  end
+    describe "single token on a single line" do
+      let(:code) { "foo" }
+    
+      it { should eq [[:Identifier, "foo", 0]] }
+    end
   
-  describe "multiple tokens on a single line" do
-    let(:code) { "foo bar baz" }
+    describe "multiple tokens on a single line" do
+      let(:code) { "foo bar baz" }
     
-    it { should eq [
-      [:Identifier, "foo", 0],
-      [:Identifier, "bar", 0],
-      [:Identifier, "baz", 0]
-    ]}
+      it { should eq [
+        [:Identifier, "foo", 0],
+        [:Identifier, "bar", 0],
+        [:Identifier, "baz", 0]
+      ]}
+    end
+
+    describe "multiple spaces are consumed between tokens" do
+      let(:code) { "foo      bar     baz" }
+    
+      it { should eq [
+        [:Identifier, "foo", 0],
+        [:Identifier, "bar", 0],
+        [:Identifier, "baz", 0]
+      ]}
+    end
+
+    describe "multiple tokens on multiple lines" do
+      let(:code) {
+        <<-CODE.gsub(/ +\|/, '')
+          |foo
+          |bar baz
+          |yaz
+        CODE
+      }
+    
+      it { should eq [
+        [:Identifier, "foo", 0, newLine: true],
+        [:Terminator, "\n",  0],
+        [:Identifier, "bar", 1],
+        [:Identifier, "baz", 1, newLine: true],
+        [:Terminator, "\n",  1],
+        [:Identifier, "yaz", 2, newLine: true],
+        [:Terminator, "\n",  2]
+      ]}
+    end
+  
+    describe "multiple new lines are consumed" do
+      let(:code) {
+        <<-CODE.gsub(/ +\|/, '')
+          |foo
+          |
+          |
+          |bar
+        CODE
+      }
+    
+      it { should eq [
+        [:Identifier, "foo", 0, newLine: true],
+        [:Terminator, "\n",  0],
+        [:Identifier, "bar", 3, newLine: true],
+        [:Terminator, "\n",  3],
+      ]}
+    end
   end
 
-  describe "multiple spaces are consumed between tokens" do
-    let(:code) { "foo      bar     baz" }
-    
-    it { should eq [
-      [:Identifier, "foo", 0],
-      [:Identifier, "bar", 0],
-      [:Identifier, "baz", 0]
-    ]}
-  end
-
-  describe "multiple tokens on multiple lines" do
-    let(:code) {
-      <<-CODE.gsub(/ +\|/, '')
-        |foo
-        |bar baz
-        |yaz
-      CODE
-    }
-    
-    it { should eq [
-      [:Identifier, "foo", 0, newLine: true],
-      [:Terminator, "\n",  0],
-      [:Identifier, "bar", 1],
-      [:Identifier, "baz", 1, newLine: true],
-      [:Terminator, "\n",  1],
-      [:Identifier, "yaz", 2, newLine: true],
-      [:Terminator, "\n",  2]
-    ]}
-  end
-  
-  describe "multiple new lines are consumed" do
-    let(:code) {
-      <<-CODE.gsub(/ +\|/, '')
-        |foo
-        |
-        |
-        |bar
-      CODE
-    }
-    
-    it { should eq [
-      [:Identifier, "foo", 0, newLine: true],
-      [:Terminator, "\n",  0],
-      [:Identifier, "bar", 3, newLine: true],
-      [:Terminator, "\n",  3],
-    ]}
-  end
-  
   describe "whole, decimal, and exponential numbers" do
     let(:code){ "1 2.58 9e11" }
     
@@ -452,7 +504,6 @@ describe RScript::Lexer do
         [:Identifier, "foo", 0]
       ]}
     end
-
   end
 end
 
