@@ -27,6 +27,7 @@ class RScript::Lexer
   OPERATOR     = /\A 
                   (?: [+-\/*%]=                 # compound assignment
                     | \*\*                      # math to the power of
+                    | ->                        # lambda declaration
                     | [+-\/*%]                  # arithmetic
                     | [\(\)] | [\[\]]           # parens, brackets
                     | << | >>                   # bit-shift
@@ -42,6 +43,7 @@ class RScript::Lexer
   LOGIC_OPERATORS = %w( || && | & ^ )
   SHIFT_OPERATORS = %w( << >> )
   UNARY_OPERATORS = %w( - + ! )
+  LAMBDA_OPERATORS = %w( -> )
   
   RESERVED_IDENTIFIER_TAGS = {
     class:  :Class,
@@ -128,6 +130,8 @@ class RScript::Lexer
       token :Shift, operator
     elsif UNARY_OPERATORS.include?(operator) && (peek =~ NUMBER || peek =~ IDENTIFIER)
       token :Unary, operator
+    elsif LAMBDA_OPERATORS.include?(operator)
+      token :Lambda, operator
     else
       token :Operator, operator
     end

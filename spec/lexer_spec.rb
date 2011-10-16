@@ -532,6 +532,28 @@ describe RScript::Lexer do
         end
       end
     end
+    
+    describe "lambda: ->" do
+      context "anonymous block" do
+        let(:code){ "->" }
+      
+        it { should eq [
+          [:Lambda, "->", 0]
+        ]}
+      end
+
+      context "after identifier" do
+        let(:code){ "foo ->" }
+      
+        it { should eq [
+          [:Identifier, "foo", 0],
+          [:Lambda, "->", 0]
+        ]}
+      end
+
+
+    end
   end
+  
 end
 
