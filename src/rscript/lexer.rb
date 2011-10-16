@@ -177,7 +177,7 @@ class RScript::Lexer
     number.length
   end
   
-  # Matches single quoted strings
+  # Matches single and double quoted strings
   def string_token
     case @chunk[0]
     when "'"
