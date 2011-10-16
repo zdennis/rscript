@@ -4,7 +4,7 @@ require 'ruby-debug'
 #   [tag, value, lineNumber, attributes={}]
 #
 class RScript::Lexer
-  IDENTIFIER   = /\A([A-z_]+)/
+  IDENTIFIER   = /\A([A-Za-z_]+)/
   WHITESPACE   = /\A[^\n\S]+/
   MULTI_DENT   = /\A(?:\n[^\n\S]*)+/
   NUMBER       =  /\A
@@ -25,17 +25,19 @@ class RScript::Lexer
   HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
   COMMENT      = /\A(#+([^\#]*))$/
   OPERATOR     = /\A 
-                  (?: [+-\/*%]=         # compound assignment
-                    | \*\*              # math to the power of
-                    | [+-\/*%]          # arithmetic
-                    | [\(\)]            # parentheses
-                    | <= | >= | == | < | > # comparison
-                    | [=]               # assignment
+                  (?: [+-\/*%]=                 # compound assignment
+                    | \*\*                      # math to the power of
+                    | [+-\/*%]                  # arithmetic
+                    | [\(\)]                    # parentheses
+                    | != | <= | >= | == | < | > # comparison
+                    | [=]                       # assignment
+                    | \|\| | && | & | \| | \^   # logic
                   )/x
                  
   ASSIGNMENT_OPERATORS = %w( = )
   COMPOUND_ASSIGNMENT_OPERATORS = %w( += -= /= *= )
-  COMPARISON_OPERATORS = %w( < <= == >= > )
+  COMPARISON_OPERATORS = %w( < <= == >= > != )
+  LOGIC_OPERATORS = %w( || && | & ^ )
   
   IDENTIFIER_TAGS = {
     class: :Class
@@ -108,6 +110,8 @@ class RScript::Lexer
       token :Assign, operator
     elsif COMPARISON_OPERATORS.include?(operator)
       token :Comparison, operator
+    elsif LOGIC_OPERATORS.include?(operator)
+      token :Logic, operator
     else
       token :Operator, operator
     end
