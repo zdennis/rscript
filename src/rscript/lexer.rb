@@ -222,6 +222,8 @@ class RScript::Lexer
   end
   
   class Token
+    include Term::ANSIColor
+    
     attr_reader :val, :lineno, :attrs
     
     def initialize(val, lineno)
@@ -235,7 +237,7 @@ class RScript::Lexer
     end
     
     def to_s
-      "Token(#{val} on #{lineno})"
+      green("Token(#{val.inspect} on #{lineno})")
     end
     
     def length
