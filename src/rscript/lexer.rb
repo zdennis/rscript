@@ -225,10 +225,10 @@ class RScript::Lexer
     include Comparable
     include Term::ANSIColor
     
-    attr_reader :val, :lineno, :attrs
+    attr_reader :tag, :lineno, :attrs
     
-    def initialize(val, lineno, attrs={})
-      @val = val
+    def initialize(tag, lineno, attrs={})
+      @tag = tag
       @lineno = lineno
       @attrs = attrs
     end
@@ -238,7 +238,7 @@ class RScript::Lexer
     end
     
     def to_s
-      green("Token(#{val.inspect} on #{lineno})")
+      green("Token(#{tag.inspect} on #{lineno})")
     end
     
     def length
@@ -247,7 +247,7 @@ class RScript::Lexer
     
     def <=>(other)
       return -1 if self.class != other.class
-      return 0 if [val, lineno, attrs] == [other.val, other.lineno, other.attrs]
+      return 0 if [tag, lineno, attrs] == [other.tag, other.lineno, other.attrs]
       -1
     end
   end

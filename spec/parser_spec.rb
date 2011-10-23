@@ -66,7 +66,7 @@ describe RScript::Parser do
       EOS
     }
   end
-  
+
   describe "logic operators in a single expression on a single line" do
     code <<-EOS.heredoc
       |a || b && c & d | e ^ f
@@ -77,5 +77,18 @@ describe RScript::Parser do
       EOS
     }
   end
+
+  describe "top-level method definition" do
+    code <<-EOS.heredoc
+      |def foo
+      |  bar
+    EOS
   
+    it { should eq <<-EOS.heredoc.chomp
+        |def foo
+        |  bar
+        |end
+      EOS
+    }
+  end
 end

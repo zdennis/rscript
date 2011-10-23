@@ -4,8 +4,18 @@ module RScript::ParserExt
   end
   
   module ClassMethods
-    def new_env
-      @env ||= Environment.new
+    def new_env(scoping_token=nil)
+      top = Environment.new(@env)
+      if scoping_token
+        top.indentation = scoping_token.tag.to_i
+      else 
+        top.indentation = 0
+      end
+      @env = top
+    end
+    
+    def pop_env(scoping_token=nil)
+      @env = @env.prev
     end
 
     def env
@@ -13,31 +23,48 @@ module RScript::ParserExt
     end
   end
   
-  def new_env
-    self.class.new_env
+  def new_env(*args)
+    self.class.new_env(*args)
   end
   
   def env
     self.class.env
   end
   
+  def pop_env(*args)
+    self.class.pop_env(*args)
+  end
+  
   class Environment
+    attr_accessor :indentation
+    attr_reader :prev
+    
+    def initialize(prev)
+      @prev = prev
+    end
   end
   
   class Node
+    attr_reader :env
+    
     def initialize
       @env = RScript::Parser.env
     end
     
     def as_ruby(token)
       return token.to_ruby if Node === token
-      return token.val if ::RScript::Lexer::Token === token
+      return token.tag if ::RScript::Lexer::Token === token
       return "" if token.nil?
       raise NotImplementedError, "Do not know how to convert #{token.inspect} to ruby"
     end
     
     def to_ruby
       raise NotImplementedError, "Must override #to_ruby in #{self.class}"
+    end
+
+    def space(str, env)
+      spacing = env.nil? ? 0 : env.indentation
+      [" " * spacing, str].join
     end
   end
   
@@ -74,7 +101,7 @@ module RScript::ParserExt
           arr << @tail.to_ruby
         else
           # assume we have a Lexer::Token
-          arr << "" if @tail.val == "\n"
+          arr << "" if @tail.tag == "\n"
         end
       end.join("\n")
     end
@@ -87,7 +114,7 @@ module RScript::ParserExt
     end
     
     def to_ruby
-      @statement.val
+      @statement.tag
     end
   end
   
@@ -113,11 +140,26 @@ module RScript::ParserExt
     
     def to_ruby
       # assume we have a Lexer::Token
-      @op.val
+      @op.tag
     end
   end
   
   class LogicOp < Operator
+  end
+  
+  class MethodDef < Node
+    def initialize(name, statements)
+      super()
+      @name, @statements = name, statements
+    end
+    
+    def to_ruby
+      Array.new.tap do |arr|
+        arr << space("def #{as_ruby(@name)}", env.prev)
+        arr << space(@statements.to_ruby.chomp, env)
+        arr << space("end", env.prev)
+      end.join("\n")
+    end
   end
   
 end

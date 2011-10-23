@@ -22,7 +22,8 @@ stmts: stmt
    
 stmt: 
     id { result = Statement.new val[0] }
-    
+    | Method id term Indent stmts Outdent 
+      { new_env val[3] ; result = MethodDef.new(val[1], val[4]) ; pop_env val[5] }
     | expr
     
 expr: id operator id { result = Expression.new val[0], val[1], val[2] }
