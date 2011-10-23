@@ -55,6 +55,17 @@ describe RScript::Parser do
       EOS
     }
   end
+
+  describe "mathematical operators in a single expression on a single line" do
+    code <<-EOS.heredoc
+      |a + b - c * d / e % f ** g
+    EOS
+    
+    it { should eq <<-EOS.heredoc
+        |a + b - c * d / e % f ** g
+      EOS
+    }
+  end
   
   
 end

@@ -26,12 +26,18 @@ stmt:
     | expr
     
 expr: id operator id { result = Expression.new val[0], val[1], val[2] }
+    | expr operator id { result = Expression.new val[0], val[1], val[2] }
 
 id: 
   # val[0] is the raw Identifier
   Identifier { result = val[0] } 
   
-operator: '+' { result = Operator.new val[0] }
+operator: '+'  { result = Operator.new val[0] }
+        | '-'  { result = Operator.new val[0] }
+        | '**' { result = Operator.new val[0] }
+        | '*'  { result = Operator.new val[0] }
+        | '/'  { result = Operator.new val[0] }
+        | '%'  { result = Operator.new val[0] }
 
 term: Terminator
 
