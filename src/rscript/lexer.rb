@@ -133,7 +133,7 @@ class RScript::Lexer
     elsif LAMBDA_OPERATORS.include?(operator)
       token :Lambda, operator
     else
-      token :Operator, operator
+      token operator, operator
     end
     return operator.length
   end
@@ -150,7 +150,7 @@ class RScript::Lexer
   def line_token
     return nil unless md = MULTI_DENT.match(@chunk)
 
-    @tokens.last.push newLine: true
+    @tokens.last.last.push newLine: true
     token :Terminator, "\n"
 
     indent = md.to_a[0]
@@ -218,6 +218,28 @@ class RScript::Lexer
   end
   
   def token(tag, value)
-    @tokens.push [tag, value, @line]
+    @tokens.push [tag, Token.new(value, @line)]
+  end
+  
+  class Token
+    attr_reader :val, :lineno, :attrs
+    
+    def initialize(val, lineno)
+      @val = val
+      @lineno = lineno
+      @attrs = {}
+    end
+    
+    def push(attrs)
+      @attrs.merge! attrs
+    end
+    
+    def to_s
+      "Token(#{val} on #{lineno})"
+    end
+    
+    def length
+      to_s.length
+    end
   end
 end
