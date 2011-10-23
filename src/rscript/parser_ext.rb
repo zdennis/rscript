@@ -28,12 +28,42 @@ module RScript::ParserExt
     def initialize
       @env = RScript::Parser.env
     end
+    
+    def to_ruby
+      raise NotImplementedError, "Must override #to_ruby in #{self.class}"
+    end
+  end
+  
+  class Program < Node
+    def initialize(statements, term=nil)
+      @statements = statements
+      @term = term
+    end
+    
+    def to_ruby
+      @statements.to_ruby
+    end
   end
   
   class Statements < Node
-    def initialize(head, tail)
+    def initialize(head, tail=nil)
       super()
       @head, @tail = head, tail
+    end
+    
+    def to_ruby
+      Array.new.tap do |arr|
+        arr << @head.to_ruby if @head
+        case @tail
+        when nil
+          # no-op
+        when Node
+          arr << @tail.to_ruby
+        else
+          # assume we have a Lexer::Token
+          arr << "" if @tail.val == "\n"
+        end
+      end.join("\n")
     end
   end
   
@@ -41,6 +71,10 @@ module RScript::ParserExt
     def initialize(statement)
       super()
       @statement = statement
+    end
+    
+    def to_ruby
+      @statement.val
     end
   end
   

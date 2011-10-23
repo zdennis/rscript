@@ -9,15 +9,20 @@ rule
 program: 
   { new_env }
   stmts
-  { result = val }
+  { result = Program.new val[1] }
 
 stmts: stmt
-      
+
+    | stmts term { result = Statements.new val[0], val[1] }
+
+
     # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
     # - we ignore the terminator
     | stmts term stmt { result = Statements.new val[0], val[2] } 
+    
    
-stmt: id { result = Statement.new val[0] }
+stmt: 
+    id { result = Statement.new val[0] }
     
     | expr
     
@@ -33,17 +38,24 @@ term: Terminator
 
 
 ---- inner
-  require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rscript'))
   include ParserExt
   
+  def dprint(str="")
+    print str if ENV["DEBUG"]
+  end
+  
+  def dputs(str="")
+    puts str if ENV["DEBUG"]
+  end
+  
   def parse(str)
-    print "lexing..."
+    dprint "lexing..." 
     @q = RScript::Lexer.new.tokenize(str)
-    puts "done"
+    dputs "done"
     # @q.push [false, '$']   # is optional from Racc 1.3.7
-    puts
-    puts @q.inspect
-    puts
+    dputs
+    dputs @q.inspect
+    dputs
     __send__(Racc_Main_Parsing_Routine, _racc_setup(), false)
   end
 
