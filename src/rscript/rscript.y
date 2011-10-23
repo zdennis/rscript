@@ -15,7 +15,6 @@ stmts: stmt
 
     | stmts term { result = Statements.new val[0], val[1] }
 
-
     # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
     # - we ignore the terminator
     | stmts term stmt { result = Statements.new val[0], val[2] } 

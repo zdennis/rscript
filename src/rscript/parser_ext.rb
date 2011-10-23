@@ -29,6 +29,13 @@ module RScript::ParserExt
       @env = RScript::Parser.env
     end
     
+    def as_ruby(token)
+      return token.to_ruby if Node === token
+      return token.val if ::RScript::Lexer::Token === token
+      return "" if token.nil?
+      raise NotImplementedError, "Do not know how to convert #{token.inspect} to ruby"
+    end
+    
     def to_ruby
       raise NotImplementedError, "Must override #to_ruby in #{self.class}"
     end
@@ -59,10 +66,10 @@ module RScript::ParserExt
     
     def to_ruby
       Array.new.tap do |arr|
-        arr << @head.to_ruby if @head
+        arr << as_ruby(@head)
+
         case @tail
-        when nil
-          # no-op
+        when nil # no-op
         when Node
           arr << @tail.to_ruby
         else
@@ -89,11 +96,24 @@ module RScript::ParserExt
       super()
       @head, @op, @tail = head, op, tail
     end
+    
+    def to_ruby
+      Array.new.tap do |arr|
+        arr << as_ruby(@head)
+        arr << @op.to_ruby
+        arr << as_ruby(@tail)
+      end.join(" ")
+    end
   end
   
   class Operator < Node
     def initialize(op)
       @op = op
+    end
+    
+    def to_ruby
+      # assume we have a Lexer::Token
+      @op.val
     end
   end
   
