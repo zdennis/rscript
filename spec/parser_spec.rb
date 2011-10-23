@@ -67,5 +67,15 @@ describe RScript::Parser do
     }
   end
   
+  describe "logic operators in a single expression on a single line" do
+    code <<-EOS.heredoc
+      |a || b && c & d | e ^ f
+    EOS
+    
+    it { should eq <<-EOS.heredoc
+        |a || b && c & d | e ^ f
+      EOS
+    }
+  end
   
 end

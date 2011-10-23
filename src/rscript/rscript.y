@@ -32,17 +32,17 @@ id:
   # val[0] is the raw Identifier
   Identifier { result = val[0] } 
   
-operator: '+'  { result = Operator.new val[0] }
-        | '-'  { result = Operator.new val[0] }
-        | '**' { result = Operator.new val[0] }
-        | '*'  { result = Operator.new val[0] }
-        | '/'  { result = Operator.new val[0] }
-        | '%'  { result = Operator.new val[0] }
-
+operator: '+'   { result = Operator.new val[0] }
+        | '-'   { result = Operator.new val[0] }
+        | '**'  { result = Operator.new val[0] }
+        | '*'   { result = Operator.new val[0] }
+        | '/'   { result = Operator.new val[0] }
+        | '%'   { result = Operator.new val[0] }
+        | Logic { result = LogicOp.new val[0] }
+        
 term: Terminator
 
 none: { result = Nothing.new }
-  
 
 
 ---- inner

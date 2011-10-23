@@ -117,4 +117,7 @@ module RScript::ParserExt
     end
   end
   
+  class LogicOp < Operator
+  end
+  
 end
