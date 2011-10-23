@@ -9,21 +9,26 @@ rule
 program: 
   { new_env }
   stmts
-  { 
-    result = val }
+  { result = val }
 
 stmts: stmt
       
-     # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
-     # - we ignore the terminator
-     | stmts term stmt { result = Statements.new val[0], val[2] } 
+    # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
+    # - we ignore the terminator
+    | stmts term stmt { result = Statements.new val[0], val[2] } 
    
 stmt: id { result = Statement.new val[0] }
+    
+    | expr
+    
+expr: id operator id { result = Expression.new val[0], val[1], val[2] }
 
 id: 
   # val[0] is the raw Identifier
   Identifier { result = val[0] } 
   
+operator: '+' { result = Operator.new val[0] }
+
 term: Terminator
 
 
@@ -56,8 +61,7 @@ term: Terminator
 
 if $0 == __FILE__
   src = <<EOS.chomp
-a
-b
+a + b
 c
 d
 EOS
