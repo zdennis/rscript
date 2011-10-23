@@ -33,13 +33,7 @@ term: Terminator
 
 
 ---- inner
-  require 'bundler'
-  Bundler.setup(:development)
-  require 'term/ansicolor'
-  include Term::ANSIColor
-
   require File.expand_path(File.join(File.dirname(__FILE__), '..', 'rscript'))
-  
   include ParserExt
   
   def parse(str)
