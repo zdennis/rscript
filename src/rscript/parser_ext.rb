@@ -41,7 +41,13 @@ module RScript::ParserExt
     end
     
     def to_ruby
-      @statements.to_ruby
+      @statements.to_ruby 
+    end
+  end
+  
+  class Nothing < Node
+    def to_ruby
+      ""
     end
   end
   

@@ -6,6 +6,11 @@ describe RScript::Lexer do
   def t(val, lineno, attrs={})
     RScript::Lexer::Token.new(val, lineno, attrs)
   end
+  
+  describe "empty string" do
+    let(:code) { "" }
+    it { should eq [] }
+  end
 
   describe "identifiers" do
     describe "naming: starts with lower-case alpha" do

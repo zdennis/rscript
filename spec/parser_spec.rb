@@ -8,6 +8,11 @@ describe RScript::Parser do
   subject { ast.to_ruby }
   let(:ast){ self.described_class.new.parse(source) }
     
+  describe "empty program" do
+    source ""
+    it { should eq "" }
+  end
+    
   describe "simple statements" do
     source <<-EOS
       |a

@@ -6,10 +6,10 @@ class RScript::Parser
 
 rule
 
-program: 
-  { new_env }
-  stmts
-  { result = Program.new val[1] }
+program: none
+    | { new_env }
+      stmts
+      { result = Program.new val[1] }
 
 stmts: stmt
 
@@ -35,6 +35,9 @@ id:
 operator: '+' { result = Operator.new val[0] }
 
 term: Terminator
+
+none: { result = Nothing.new }
+  
 
 
 ---- inner
@@ -71,6 +74,7 @@ a + b
 c
 d
 EOS
+src = ""
   puts "-"*100
   puts 'parsing:'
   puts src
