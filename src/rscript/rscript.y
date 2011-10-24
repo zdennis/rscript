@@ -19,19 +19,19 @@ program: none
       stmts
       { result = Program.new val[1] }
 
-stmts: stmt
+stmts: none 
+    | stmt
     | stmts term { result = Statements.new val[0], val[1] }
     
     # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
     # - we ignore the terminator
     | stmts term stmt { result = Statements.new val[0], val[2] }
-    # 
-    # | stmts outdent
+    
+    | stmts indent stmts { result = Statements.new val[0], val[2] }
+    | stmts outdent term stmts { result = Statements.new val[0], val[3] }
 
 stmt:  
-    indent
-    | outdent
-    | klass_def
+    klass_def
     | expr { result = Statement.new val[0] }
 
 expr: arg
@@ -54,9 +54,6 @@ primary: literal
 literal: id
 
 klass_def: Class id term { result = ClassDefinition.new(val[1]) }
-     
-    #| klass_def term
-    #| klass_def term Indent
     #| Class id term Indent { new_env val[3] ; result = ClassDefinition.new(val[1]) }
     #| Class id term Indent stmts
 
