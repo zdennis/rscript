@@ -6,9 +6,8 @@ module RScript::ParserExt
   module ClassMethods
     def new_env(scoping_token=nil)
       top = Environment.new(@env)
-      if scoping_token
-        top.indentation = scoping_token.tag.to_i 
-        # top.indentation + top.prev.indentation
+      if top.prev
+        top.indentation = top.prev.indentation + 2
       else 
         top.indentation = 0
       end
@@ -60,7 +59,7 @@ module RScript::ParserExt
     def as_ruby(token)
       return token.to_ruby if Node === token
       return token.tag if ::RScript::Lexer::Token === token
-      return "" if token.nil?
+      return nil if token.nil?
       raise NotImplementedError, "Do not know how to convert #{token.inspect} to ruby"
     end
     
@@ -104,7 +103,7 @@ module RScript::ParserExt
         case @tail
         when nil # no-op
         when Node
-          arr << @tail.to_ruby
+          arr << as_ruby(@tail)
         else
           # assume we have a Lexer::Token
           arr << "" if @tail.tag == "\n"
@@ -154,18 +153,19 @@ module RScript::ParserExt
   end
   
   class ClassDefinition < Node
+    attr_accessor :statements
+    
     def initialize(name, statements=nil)
       super()
       @name, @statements = name, statements
     end
     
     def to_ruby
-      puts "class env: #{env.inspect}"
       Array.new.tap do |arr|
         arr << space("class #{as_ruby(@name)}", env.prev)
-        #arr << space(@statements.to_ruby.chomp, env)
+#        arr << space(as_ruby(statements), env)
         arr << space("end", env.prev)
-      end.join("\n")
+      end.compact.join("\n")
     end    
   end
   
