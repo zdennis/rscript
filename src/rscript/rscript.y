@@ -29,9 +29,9 @@ stmts: stmt
     # | stmts outdent
 
 stmt:  
-    klass_def
-    # | indent
-    # | id { result = Statement.new val[0] }
+    indent
+    | outdent
+    | klass_def
     | expr { result = Statement.new val[0] }
 
 expr: arg
@@ -53,20 +53,21 @@ primary: literal
 
 literal: id
 
-klass_def: Class id { result = ClassDefinition.new(val[1]) }
+klass_def: Class id term { result = ClassDefinition.new(val[1]) }
+     
     #| klass_def term
     #| klass_def term Indent
     #| Class id term Indent { new_env val[3] ; result = ClassDefinition.new(val[1]) }
     #| Class id term Indent stmts
 
-method_def: 
-    Method id term Indent stmts term { new_env val[3] ; result = MethodDefinition.new(val[1]) }
+# method_def: 
+#     Method id { new_env val[3] ; result = MethodDefinition.new(val[1]) }
 
-# indent: Indent { result = nil }
+indent: Indent { result = nil }
 #     | indent Indent { result = nil }
-# 
-# outdent: Outdent { puts "*"*100 ; pop_env val[0] ; result = nil }
-#     | outdent Outdent { puts "-"*100 ; pop_env val[0] ; result = nil }
+
+outdent: Outdent { result = nil }
+#    | outdent Outdent { puts "-"*100 ; pop_env val[0] ; result = nil }
     
 id: 
   # val[0] is the raw Identifier

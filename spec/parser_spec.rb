@@ -93,7 +93,7 @@ describe RScript::Parser do
   end
 
   describe "class definitions" do
-    describe "class definition without body" do
+    describe "class definition without body w/o no trailing newline" do
       code <<-EOS.heredoc.chomp
         |class Foo
       EOS
@@ -105,17 +105,17 @@ describe RScript::Parser do
       }
     end
 
-    # describe "class definition without body" do
-    #   code <<-EOS.heredoc
-    #     |class Foo
-    #   EOS
-    #   
-    #   it { should eq <<-EOS.heredoc
-    #       |class Foo
-    #       |end
-    #     EOS
-    #   }
-    # end
+    describe "class definition without body w/trailing newline" do
+      code <<-EOS.heredoc
+        |class Foo
+      EOS
+      
+      it { should eq <<-EOS.heredoc.chomp
+          |class Foo
+          |end
+        EOS
+      }
+    end
 
     describe "class definition with nested class definition" do
       code <<-EOS.heredoc
