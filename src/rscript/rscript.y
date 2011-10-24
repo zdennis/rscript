@@ -1,9 +1,17 @@
 # $Id$
 #
-# convert Array-like string into Ruby's Array.
 
 class RScript::Parser
+  token Class Method Indent Outdent Identifier Terminator
 
+  prechigh
+    left '**' '*' '/' '%'
+    left '+' '-'
+    left '&&' '||'
+    left '|' '^' '&'
+  preclow
+
+  
 rule
 
 program: none
@@ -12,34 +20,57 @@ program: none
       { result = Program.new val[1] }
 
 stmts: stmt
-
     | stmts term { result = Statements.new val[0], val[1] }
-
+    
     # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
     # - we ignore the terminator
-    | stmts term stmt { result = Statements.new val[0], val[2] } 
-    
-   
-stmt: 
-    id { result = Statement.new val[0] }
-    | Method id term Indent stmts Outdent 
-      { new_env val[3] ; result = MethodDef.new(val[1], val[4]) ; pop_env val[5] }
-    | expr
-    
-expr: id operator id { result = Expression.new val[0], val[1], val[2] }
-    | expr operator id { result = Expression.new val[0], val[1], val[2] }
+    | stmts term stmt { result = Statements.new val[0], val[2] }
+    # 
+    # | stmts outdent
 
+stmt:  
+    klass_def
+    # | indent
+    # | id { result = Statement.new val[0] }
+    | expr { result = Statement.new val[0] }
+
+expr: arg
+
+arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '-'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '**' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }   
+   | arg '*'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '/'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '%'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '^'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '||' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '&&' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '&'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | arg '|'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | primary
+    
+primary: literal
+
+literal: id
+
+klass_def: Class id { result = ClassDefinition.new(val[1]) }
+    #| klass_def term
+    #| klass_def term Indent
+    #| Class id term Indent { new_env val[3] ; result = ClassDefinition.new(val[1]) }
+    #| Class id term Indent stmts
+
+method_def: 
+    Method id term Indent stmts term { new_env val[3] ; result = MethodDefinition.new(val[1]) }
+
+# indent: Indent { result = nil }
+#     | indent Indent { result = nil }
+# 
+# outdent: Outdent { puts "*"*100 ; pop_env val[0] ; result = nil }
+#     | outdent Outdent { puts "-"*100 ; pop_env val[0] ; result = nil }
+    
 id: 
   # val[0] is the raw Identifier
-  Identifier { result = val[0] } 
-  
-operator: '+'   { result = Operator.new val[0] }
-        | '-'   { result = Operator.new val[0] }
-        | '**'  { result = Operator.new val[0] }
-        | '*'   { result = Operator.new val[0] }
-        | '/'   { result = Operator.new val[0] }
-        | '%'   { result = Operator.new val[0] }
-        | Logic { result = LogicOp.new val[0] }
+  Identifier { result = val[0] }
         
 term: Terminator
 
@@ -76,11 +107,9 @@ none: { result = Nothing.new }
 
 if $0 == __FILE__
   src = <<EOS.chomp
-a + b
-c
-d
+class Foo
 EOS
-src = ""
+
   puts "-"*100
   puts 'parsing:'
   puts src

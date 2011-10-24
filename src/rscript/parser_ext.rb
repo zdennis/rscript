@@ -7,7 +7,8 @@ module RScript::ParserExt
     def new_env(scoping_token=nil)
       top = Environment.new(@env)
       if scoping_token
-        top.indentation = scoping_token.tag.to_i
+        top.indentation = scoping_token.tag.to_i 
+        # top.indentation + top.prev.indentation
       else 
         top.indentation = 0
       end
@@ -15,6 +16,9 @@ module RScript::ParserExt
     end
     
     def pop_env(scoping_token=nil)
+      if @env.nil?
+        raise "SyntaxError: Unexpected end of scoping"
+      end
       @env = @env.prev
     end
 
@@ -24,6 +28,7 @@ module RScript::ParserExt
   end
   
   def new_env(*args)
+    puts "new_env: #{args.inspect}"
     self.class.new_env(*args)
   end
   
@@ -32,6 +37,7 @@ module RScript::ParserExt
   end
   
   def pop_env(*args)
+    puts "pop_env: #{args.inspect}"
     self.class.pop_env(*args)
   end
   
@@ -114,7 +120,7 @@ module RScript::ParserExt
     end
     
     def to_ruby
-      @statement.tag
+      as_ruby(@statement)
     end
   end
   
@@ -147,16 +153,33 @@ module RScript::ParserExt
   class LogicOp < Operator
   end
   
-  class MethodDef < Node
-    def initialize(name, statements)
+  class ClassDefinition < Node
+    def initialize(name, statements=nil)
       super()
       @name, @statements = name, statements
     end
     
     def to_ruby
+      puts "class env: #{env.inspect}"
+      Array.new.tap do |arr|
+        arr << space("class #{as_ruby(@name)}", env.prev)
+        #arr << space(@statements.to_ruby.chomp, env)
+        arr << space("end", env.prev)
+      end.join("\n")
+    end    
+  end
+  
+  class MethodDefinition < Node
+    def initialize(name, statements=nil)
+      super()
+      @name, @statements = name, statements
+    end
+    
+    def to_ruby
+      puts "method env: #{env.inspect}"
       Array.new.tap do |arr|
         arr << space("def #{as_ruby(@name)}", env.prev)
-        arr << space(@statements.to_ruby.chomp, env)
+#        arr << space(@statements.to_ruby.chomp, env)
         arr << space("end", env.prev)
       end.join("\n")
     end

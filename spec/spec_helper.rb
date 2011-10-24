@@ -11,7 +11,7 @@ ProjectRoot = Pathname.new File.join(File.dirname(__FILE__), "../src")
 GrammarFile = ProjectRoot.join("rscript/rscript.y")
 OutputFile  = ProjectRoot.join("rscript/parser.rb")
 
-system %|racc #{GrammarFile} -o #{OutputFile}|
+system %|racc #{GrammarFile} -v -t -o #{OutputFile}|
 
 require 'rscript'
 

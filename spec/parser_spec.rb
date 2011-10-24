@@ -91,4 +91,63 @@ describe RScript::Parser do
       EOS
     }
   end
+
+  describe "class definitions" do
+    describe "class definition without body" do
+      code <<-EOS.heredoc.chomp
+        |class Foo
+      EOS
+  
+      it { should eq <<-EOS.heredoc.chomp
+          |class Foo
+          |end
+        EOS
+      }
+    end
+
+    # describe "class definition without body" do
+    #   code <<-EOS.heredoc
+    #     |class Foo
+    #   EOS
+    #   
+    #   it { should eq <<-EOS.heredoc
+    #       |class Foo
+    #       |end
+    #     EOS
+    #   }
+    # end
+
+    describe "class definition with nested class definition" do
+      code <<-EOS.heredoc
+        |class Foo
+        |  class Bar
+      EOS
+  
+      it { should eq <<-EOS.heredoc
+          |class Foo
+          |  class Bar
+          |  end
+          |end
+        EOS
+      }
+    end
+
+  end
+
+  describe "top-level class definition" do
+    code <<-EOS.heredoc
+      |class Foo
+      |  def bar
+      |    baz
+    EOS
+  
+    it { should eq <<-EOS.heredoc.chomp
+        |class Foo
+        |  def bar
+        |    baz
+        |  end
+        |end
+      EOS
+    }
+  end
 end

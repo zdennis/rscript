@@ -125,7 +125,7 @@ class RScript::Lexer
     elsif COMPARISON_OPERATORS.include?(operator)
       token :Comparison, operator
     elsif LOGIC_OPERATORS.include?(operator)
-      token :Logic, operator
+      token operator, operator
     elsif SHIFT_OPERATORS.include?(operator)
       token :Shift, operator
     elsif UNARY_OPERATORS.include?(operator) && (peek =~ NUMBER || peek =~ IDENTIFIER)
