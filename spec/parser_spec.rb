@@ -20,24 +20,24 @@ describe RScript::Parser do
   end
 
   describe "simple statement on a single line" do
-    code <<-EOS.heredoc
+    code <<-EOS.heredoc.chomp
       |a
     EOS
     
-    it { should eq <<-EOS.heredoc
+    it { should eq <<-EOS.heredoc.chomp
         |a
       EOS
     }
   end
     
   describe "simple statements across multiple lines" do
-    code <<-EOS.heredoc
+    code <<-EOS.heredoc.chomp
       |a
       |b
       |C
     EOS
     
-    it { should eq <<-EOS.heredoc
+    it { should eq <<-EOS.heredoc.chomp
         |a
         |b
         |C
@@ -46,52 +46,52 @@ describe RScript::Parser do
   end
   
   describe "simple expression on a single line" do
-    code <<-EOS.heredoc
+    code <<-EOS.heredoc.chomp
       |a + b
     EOS
     
-    it { should eq <<-EOS.heredoc
+    it { should eq <<-EOS.heredoc.chomp
         |a + b
       EOS
     }
   end
 
   describe "mathematical operators in a single expression on a single line" do
-    code <<-EOS.heredoc
+    code <<-EOS.heredoc.chomp
       |a + b - c * d / e % f ** g
     EOS
     
-    it { should eq <<-EOS.heredoc
+    it { should eq <<-EOS.heredoc.chomp
         |a + b - c * d / e % f ** g
       EOS
     }
   end
 
   describe "logic operators in a single expression on a single line" do
-    code <<-EOS.heredoc
+    code <<-EOS.heredoc.chomp
       |a || b && c & d | e ^ f
     EOS
     
-    it { should eq <<-EOS.heredoc
+    it { should eq <<-EOS.heredoc.chomp
         |a || b && c & d | e ^ f
       EOS
     }
   end
 
-  describe "top-level method definition" do
-    code <<-EOS.heredoc
-      |def foo
-      |  bar
-    EOS
-  
-    it { should eq <<-EOS.heredoc.chomp
-        |def foo
-        |  bar
-        |end
-      EOS
-    }
-  end
-
+  # describe "top-level method definition" do
+  #   code <<-EOS.heredoc
+  #     |def foo
+  #     |  bar
+  #   EOS
+  # 
+  #   it { should eq <<-EOS.heredoc.chomp
+  #       |def foo
+  #       |  bar
+  #       |end
+  #     EOS
+  #   }
+  # end
+  # 
   describe "class definitions" do
     describe "class definition without body w/o no trailing newline" do
       code <<-EOS.heredoc.chomp
@@ -123,7 +123,7 @@ describe RScript::Parser do
         |  class Bar
       EOS
   
-      it { should eq <<-EOS.heredoc
+      it { should eq <<-EOS.heredoc.chomp
           |class Foo
           |  class Bar
           |  end

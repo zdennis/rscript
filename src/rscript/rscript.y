@@ -16,29 +16,21 @@ rule
 
 program: none
     | { new_env }
-      stmts
+      body
       { result = Program.new val[1] }
-
-stmts: stmt
-    | stmts term { result = Statements.new val[0], val[1] }
     
-    # val[0] is array of statements, val[1] is the terminator and val[2] is the raw statement
-    # - we ignore the terminator
-    | stmts term stmt { result = Statements.new val[0], val[2] }
-    
-    # | stmts indent stmts { result = Statements.new val[0], val[2] }
-    # | stmts outdent term stmts { result = Statements.new val[0], val[3] }
+body: line { result = Statement.new val[0] }
+    | body term line { result = Statements.new val[0], val[2] }
+    | body term { result = Statements.new val[0], nil }
 
-stmt:  
-    klass_def
-    | klass_def Indent stmts Outdent { val.first.statements = val[2] }
-    | expr { result = Statement.new val[0] }
+line: expr { result = Statement.new val[0] }
 
 expr: arg
+   | klass
 
 arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '-'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '**' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }   
+   | arg '**' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '*'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '/'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '%'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
@@ -48,24 +40,18 @@ arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2]
    | arg '&'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '|'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | primary
-    
+
 primary: literal
 
 literal: id
 
-klass_def: 
-  Class id term Indent stmts { new_env ; result = ClassDefinition.new(val[1], val[4]) }
-   | Class id term Outdent { new_env ; result = ClassDefinition.new(val[1]) ; pop_env val[3] }
+block: Indent Outdent
+   | Indent body Outdent { result = Statements.new(val[1]) ; pop_env val[2] }
 
-indent: Indent { result = nil }
-#     | indent Indent { result = nil }
-
-outdent: Outdent { result = nil }
-#    | outdent Outdent { puts "-"*100 ; pop_env val[0] ; result = nil }
-    
-id: 
-  # val[0] is the raw Identifier
-  Identifier { result = val[0] }
+klass: Class id term block { new_env ; result = ClassDefinition.new(val[1], val[3]) }
+   | Class id term { new_env ; result = ClassDefinition.new(val[1], nil) }
+ 
+id: Identifier { result = val[0] }
         
 term: Terminator
 

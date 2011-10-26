@@ -163,7 +163,7 @@ module RScript::ParserExt
     def to_ruby
       Array.new.tap do |arr|
         arr << space("class #{as_ruby(@name)}", env.prev)
-#        arr << space(as_ruby(statements), env)
+        arr << space(as_ruby(statements), env)
         arr << space("end", env.prev)
       end.compact.join("\n")
     end    
