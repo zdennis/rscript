@@ -28,6 +28,7 @@ line: expr { result = Statement.new val[0] }
 
 expr: arg
    | klass
+   | method
 
 arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '-'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
@@ -52,6 +53,10 @@ block: Indent Outdent
 klass: Class id term block { result = ClassDefinition.new(val[1], val[3]) }
    | Class id term { result = ClassDefinition.new(val[1], nil) }
    | Class id { result = ClassDefinition.new(val[1], nil) }
+
+method: Method id term block { result = MethodDefinition.new(val[1], val[3]) }
+   | Method id term { result = MethodDefinition.new(val[1])}
+   | Method id { result = MethodDefinition.new(val[1])}
  
 id: Identifier { result = val[0] }
         

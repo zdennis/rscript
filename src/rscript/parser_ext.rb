@@ -132,11 +132,26 @@ module RScript::ParserExt
       end.join("\n")
     end
   end
-  
+
+  class Rvalue < Node
+    def initialize(token)
+      super()
+      @token = token
+    end
+
+    def to_ruby
+      as_ruby(@token)
+    end
+  end
+
   class Statement < Node
     def initialize(statement)
       super()
-      @statement = statement
+      if statement.is_a?(Node)
+        @statement = statement
+      else
+        @statement = Statement.new(Rvalue.new(statement))
+      end
     end
 
     def block_statement?
@@ -144,15 +159,21 @@ module RScript::ParserExt
     end
 
     def increment_indentation
-      if @statement
+      if @statement && !@statement.is_a?(Rvalue)
+        #puts "trying indenting #{@statement}"
         @statement.increment_indentation
       else
+        #puts "indenting #{@statement} to #{env.indentation + 2}"
         env.indentation += 2
       end
     end
     
     def to_ruby
-      as_ruby(@statement)
+      if @statement.is_a?(Rvalue)
+        space(@statement.to_ruby, env)
+      else
+        as_ruby(@statement)
+      end
     end
   end
   
@@ -198,7 +219,6 @@ module RScript::ParserExt
     end
 
     def increment_indentation
-      puts "#{@name} indents to #{env.indentation + 2}"
       env.indentation += 2
       [statements].flatten.compact.each{ |t| t.increment_indentation }      
     end
@@ -214,16 +234,28 @@ module RScript::ParserExt
   end
   
   class MethodDefinition < Node
+    attr_reader :statements
+
     def initialize(name, statements=nil)
-      super()
       @name, @statements = name, statements
+      super()
+      if @statements
+        @statements.set_prev(env) 
+        @statements.increment_indentation
+      end
     end
-    
+
+    def increment_indentation
+      #puts "#{@name} is indenting to #{env.indentation + 2}"
+      env.indentation += 2
+      [statements].flatten.compact.each{ |t| t.increment_indentation }      
+    end
+
     def to_ruby
       Array.new.tap do |arr|
-        arr << space("def #{as_ruby(@name)}", env.prev)
-        arr << space(@statements.to_ruby.chomp, env)
-        arr << space("end", env.prev)
+        arr << space("def #{as_ruby(@name)}", env)
+        arr << as_ruby(statements) if statements
+        arr << space("end", env)
       end.join("\n")
     end
   end

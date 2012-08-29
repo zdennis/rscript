@@ -158,10 +158,24 @@ describe RScript::Parser do
       }
     end
 
-
   end
 
-  describe "top-level class definition" do
+  describe "top-level method definition" do
+    code <<-EOS.heredoc
+      |class Foo
+      |  def bar
+    EOS
+  
+    it { should eq <<-EOS.heredoc.chomp
+        |class Foo
+        |  def bar
+        |  end
+        |end
+      EOS
+    }
+  end
+
+  describe "top-level method definition with simple body" do
     code <<-EOS.heredoc
       |class Foo
       |  def bar
@@ -177,4 +191,5 @@ describe RScript::Parser do
       EOS
     }
   end
+
 end
