@@ -8,4 +8,5 @@ group :development do
   gem "ruby-debug19"
   gem "racc"
   gem "term-ansicolor"
+  gem "pry"
 end
