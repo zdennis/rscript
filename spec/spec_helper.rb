@@ -1,5 +1,6 @@
 require 'rspec'
 require 'pathname'
+require 'pry'
 
 $:.unshift File.dirname(__FILE__) + "/../src/"
 

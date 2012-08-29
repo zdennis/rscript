@@ -27,7 +27,6 @@ module RScript::ParserExt
   end
   
   def new_env(*args)
-    puts "new_env: #{args.inspect}"
     self.class.new_env(*args)
   end
   
@@ -36,16 +35,16 @@ module RScript::ParserExt
   end
   
   def pop_env(*args)
-    puts "pop_env: #{args.inspect}"
     self.class.pop_env(*args)
   end
   
   class Environment
     attr_accessor :indentation
-    attr_reader :prev
+    attr_accessor :prev
     
-    def initialize(prev)
+    def initialize(prev=nil)
       @prev = prev
+      @indentation = 0
     end
   end
   
@@ -53,7 +52,8 @@ module RScript::ParserExt
     attr_reader :env
     
     def initialize
-      @env = RScript::Parser.env
+      @env = Environment.new
+      
     end
     
     def as_ruby(token)
@@ -67,6 +67,17 @@ module RScript::ParserExt
       raise NotImplementedError, "Must override #to_ruby in #{self.class}"
     end
 
+    def set_prev(prev)
+      env.prev = prev
+    end
+
+    def block_statement?
+      false
+    end
+
+    def increment_indentation
+    end
+
     def space(str, env)
       spacing = env.nil? ? 0 : env.indentation
       [" " * spacing, str].join
@@ -74,11 +85,12 @@ module RScript::ParserExt
   end
   
   class Program < Node
-    def initialize(statements, term=nil)
+    def initialize(statements, term=nil)      
       @statements = statements
       @term = term
+      super()
     end
-    
+
     def to_ruby
       @statements.to_ruby 
     end
@@ -95,10 +107,19 @@ module RScript::ParserExt
       super()
       @head, @tail = head, tail
     end
+
+    def set_prev(prev)
+      [@head, @tail].flatten.compact.each{ |t| t.set_prev(prev) }
+    end
+
+    def increment_indentation
+      [@head, @tail].flatten.compact.each{ |t| t.increment_indentation }
+    end
     
     def to_ruby
       Array.new.tap do |arr|
         arr << as_ruby(@head)
+        arr << "" if @head.block_statement?
 
         case @tail
         when nil # no-op
@@ -116,6 +137,18 @@ module RScript::ParserExt
     def initialize(statement)
       super()
       @statement = statement
+    end
+
+    def block_statement?
+      @statement.is_a?(ClassDefinition)
+    end
+
+    def increment_indentation
+      if @statement
+        @statement.increment_indentation
+      else
+        env.indentation += 2
+      end
     end
     
     def to_ruby
@@ -156,16 +189,27 @@ module RScript::ParserExt
     attr_accessor :statements
     
     def initialize(name, statements=nil)
-      super()
       @name, @statements = name, statements
+      super()
+      if @statements
+        @statements.set_prev(env) 
+        @statements.increment_indentation
+      end
+    end
+
+    def increment_indentation
+      puts "#{@name} indents to #{env.indentation + 2}"
+      env.indentation += 2
+      [statements].flatten.compact.each{ |t| t.increment_indentation }      
     end
     
     def to_ruby
-      Array.new.tap do |arr|
-        arr << space("class #{as_ruby(@name)}", env.prev)
-        arr << space(as_ruby(statements), env)
-        arr << space("end", env.prev)
+      results = Array.new.tap do |arr|
+        arr << space("class #{as_ruby(@name)}", env)
+        arr << as_ruby(statements) if statements
+        arr << space("end", env)
       end.compact.join("\n")
+      results
     end    
   end
   
@@ -176,10 +220,9 @@ module RScript::ParserExt
     end
     
     def to_ruby
-      puts "method env: #{env.inspect}"
       Array.new.tap do |arr|
         arr << space("def #{as_ruby(@name)}", env.prev)
-#        arr << space(@statements.to_ruby.chomp, env)
+        arr << space(@statements.to_ruby.chomp, env)
         arr << space("end", env.prev)
       end.join("\n")
     end

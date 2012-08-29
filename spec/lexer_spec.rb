@@ -452,7 +452,7 @@ describe RScript::Lexer do
             let(:code){ "a#{operator}1" }
             it { should eq [
               [:Identifier, t("a", 0)],
-              [:Logic, t(operator, 0)],
+              [operator, t(operator, 0)],
               [:Number, t("1", 0)]
             ]}
           end
@@ -461,7 +461,7 @@ describe RScript::Lexer do
             let(:code){ "a #{operator} 1" }
             it { should eq [
               [:Identifier, t("a", 0)],
-              [:Logic, t(operator, 0)],
+              [operator, t(operator, 0)],
               [:Number, t("1", 0)]
             ]}
           end

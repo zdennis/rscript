@@ -22,6 +22,7 @@ program: none
 body: line { result = Statement.new val[0] }
     | body term line { result = Statements.new val[0], val[2] }
     | body term { result = Statements.new val[0], nil }
+    | line line { result = Statements.new val[0], val[1]  }
 
 line: expr { result = Statement.new val[0] }
 
@@ -46,10 +47,11 @@ primary: literal
 literal: id
 
 block: Indent Outdent
-   | Indent body Outdent { result = Statements.new(val[1]) ; pop_env val[2] }
+   | Indent body Outdent { result = Statements.new(val[1]) } #; pop_env val[2] ; }
 
-klass: Class id term block { new_env ; result = ClassDefinition.new(val[1], val[3]) }
-   | Class id term { new_env ; result = ClassDefinition.new(val[1], nil) }
+klass: Class id term block { result = ClassDefinition.new(val[1], val[3]) }
+   | Class id term { result = ClassDefinition.new(val[1], nil) }
+   | Class id { result = ClassDefinition.new(val[1], nil) }
  
 id: Identifier { result = val[0] }
         
@@ -57,25 +59,29 @@ term: Terminator
 
 none: { result = Nothing.new }
 
+---- header
+  require File.dirname(__FILE__) + "/../rscript"
+
 
 ---- inner
   include ParserExt
   
   def dprint(str="")
-    print str if ENV["DEBUG"]
+ #   print str if ENV["DEBUG"]
   end
   
   def dputs(str="")
-    puts str if ENV["DEBUG"]
+#    puts str if ENV["DEBUG"]
   end
   
   def parse(str)
+    #@yydebug = true
     dprint "lexing..." 
     @q = RScript::Lexer.new.tokenize(str)
     dputs "done"
     # @q.push [false, '$']   # is optional from Racc 1.3.7
     dputs
-    dputs @q.inspect
+#    dputs @q.inspect
     dputs
     __send__(Racc_Main_Parsing_Routine, _racc_setup(), false)
   end
@@ -89,6 +95,7 @@ none: { result = Nothing.new }
 if $0 == __FILE__
   src = <<EOS.chomp
 class Foo
+  class Bar
 EOS
 
   puts "-"*100

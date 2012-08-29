@@ -132,6 +132,33 @@ describe RScript::Parser do
       }
     end
 
+    describe "class definition with nested class definition" do
+      code <<-EOS.heredoc
+        |class Foo
+        |  class Bar
+        |
+        |class Fab
+        |  class Balloon
+        |    class Cat
+      EOS
+  
+      it { should eq <<-EOS.heredoc.chomp
+          |class Foo
+          |  class Bar
+          |  end
+          |end
+          |
+          |class Fab
+          |  class Balloon
+          |    class Cat
+          |    end
+          |  end
+          |end
+        EOS
+      }
+    end
+
+
   end
 
   describe "top-level class definition" do

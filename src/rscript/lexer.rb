@@ -83,8 +83,9 @@ class RScript::Lexer
       i += result.to_i
     end
     
-    token :Terminator, "\n" if @tokens.last && @tokens.last[0] != :Terminator
+    #token :Terminator, "\n" if @tokens.last && @tokens.last[0] != :Terminator
     
+#    puts @tokens.inspect
     @tokens
   end
   
