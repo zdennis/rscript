@@ -103,6 +103,7 @@ module RScript::ParserExt
   end
   
   class Statements < Node
+
     def initialize(head, tail=nil)
       super()
       @head, @tail = head, tail
@@ -119,11 +120,11 @@ module RScript::ParserExt
     def to_ruby
       Array.new.tap do |arr|
         arr << as_ruby(@head)
-        arr << "" if @head.block_statement?
 
         case @tail
         when nil # no-op
         when Node
+          arr << "" if @tail.block_statement?
           arr << as_ruby(@tail)
         else
           # assume we have a Lexer::Token
@@ -155,7 +156,7 @@ module RScript::ParserExt
     end
 
     def block_statement?
-      @statement.is_a?(ClassDefinition)
+      @statement.block_statement?
     end
 
     def increment_indentation
@@ -218,6 +219,10 @@ module RScript::ParserExt
       end
     end
 
+    def block_statement?
+      true
+    end    
+
     def increment_indentation
       env.indentation += 2
       [statements].flatten.compact.each{ |t| t.increment_indentation }      
@@ -243,6 +248,10 @@ module RScript::ParserExt
         @statements.set_prev(env) 
         @statements.increment_indentation
       end
+    end
+
+    def block_statement?
+      true
     end
 
     def increment_indentation

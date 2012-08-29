@@ -20,9 +20,10 @@ program: none
       { result = Program.new val[1] }
     
 body: line { result = Statement.new val[0] }
-    | body term line { result = Statements.new val[0], val[2] }
+    #| body term line { result = Statements.new val[0], val[2] }
     | body term { result = Statements.new val[0], nil }
-    | line line { result = Statements.new val[0], val[1]  }
+    | body line { result = Statements.new val[0], val[1] }
+#    | line line { result = Statements.new val[0], val[1]  }
 
 line: expr { result = Statement.new val[0] }
 
@@ -80,7 +81,7 @@ none: { result = Nothing.new }
   end
   
   def parse(str)
-    #@yydebug = true
+#    @yydebug = true
     dprint "lexing..." 
     @q = RScript::Lexer.new.tokenize(str)
     dputs "done"
