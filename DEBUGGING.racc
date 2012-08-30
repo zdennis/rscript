@@ -1,0 +1,5 @@
+Put @yydebug=true inside of the parse method in your parser.
+
+Run racc with -g option to produce a debug-build. ie:
+
+Run your program
