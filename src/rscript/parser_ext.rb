@@ -55,14 +55,14 @@ module RScript::ParserExt
       @env = Environment.new
     end
     
-    def as_ruby(token)
-      return token.to_ruby if Node === token
+    def as_ruby(token, options={})
+      return token.to_ruby(self, options) if Node === token
       return token.tag if ::RScript::Lexer::Token === token
       return nil if token.nil?
       raise NotImplementedError, "Do not know how to convert #{token.inspect} to ruby"
     end
     
-    def to_ruby
+    def to_ruby(caller, options={})
       raise NotImplementedError, "Must override #to_ruby in #{self.class}"
     end
 
@@ -90,13 +90,13 @@ module RScript::ParserExt
       super()
     end
 
-    def to_ruby
-      @statements.to_ruby 
+    def to_ruby(caller=nil)
+      @statements.to_ruby(self)
     end
   end
   
   class Nothing < Node
-    def to_ruby
+    def to_ruby(caller=nil)
       ""
     end
   end
@@ -117,7 +117,7 @@ module RScript::ParserExt
       [@head, @tail].flatten.compact.each{ |t| t.increment_indentation } ; true
     end
     
-    def to_ruby
+    def to_ruby(caller, options={})
       Array.new.tap do |arr|
         arr << as_ruby(@head)
 
@@ -140,12 +140,14 @@ module RScript::ParserExt
       @token = token
     end
 
-    def to_ruby
+    def to_ruby(caller, options={})
       as_ruby(@token)
     end
   end
 
   class Statement < Node
+    attr_reader :statement
+
     def initialize(statement)
       super()
       if statement.is_a?(Node)
@@ -170,9 +172,9 @@ module RScript::ParserExt
       true
     end
     
-    def to_ruby
+    def to_ruby(caller, options={})
       if @statement.is_a?(Rvalue) || @statement.is_a?(Expression)
-        space(@statement.to_ruby, env)
+        space(@statement.to_ruby(self), env)
       else
         as_ruby(@statement)
       end
@@ -185,10 +187,10 @@ module RScript::ParserExt
       @head, @op, @tail = head, op, tail
     end
 
-    def to_ruby
+    def to_ruby(caller, options={})
       Array.new.tap do |arr|
         arr << as_ruby(@head)
-        arr << @op.to_ruby
+        arr << @op.to_ruby(self)
         arr << as_ruby(@tail)
       end.join(" ")
     end
@@ -199,7 +201,7 @@ module RScript::ParserExt
       @op = op
     end
     
-    def to_ruby
+    def to_ruby(caller, options={})
       # assume we have a Lexer::Token
       @op.tag
     end
@@ -230,7 +232,7 @@ module RScript::ParserExt
       true
     end
     
-    def to_ruby
+    def to_ruby(caller, options={})
       results = Array.new.tap do |arr|
         arr << space("class #{as_ruby(@name)}", env)
         arr << as_ruby(statements) if statements
@@ -263,7 +265,7 @@ module RScript::ParserExt
       true
     end
 
-    def to_ruby
+    def to_ruby(caller, options={})
       Array.new.tap do |arr|
         arr << space("def #{as_ruby(@name)}", env)
         arr << as_ruby(statements) if statements
@@ -282,15 +284,28 @@ module RScript::ParserExt
       end
     end
 
-    def to_ruby
-      puts @statements.inspect
+    def to_ruby(caller, options={ :supress => false })
       Array.new.tap do |arr|
-        arr << space("-> do", env)
+        arr << space("-> do", env) unless options[:supress]
         arr << as_ruby(@statements) if @statements
+        arr << space("end", env) unless options[:supress]
+      end.join("\n")
+    end
+  end
+
+  class ExpressionWithBlock < Node
+    def initialize(expr, block)
+      @expr, @block = expr, block
+    end
+
+    def to_ruby(caller, options)
+      Array.new.tap do |arr|
+        arr << space("#{@expr.to_ruby(self)} do", env)
+        arr << as_ruby(@block, :supress => true) if @block
         arr << space("end", env)
       end.join("\n")
     end
-
   end
+
   
 end

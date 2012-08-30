@@ -29,4 +29,18 @@ describe "Parsing lambdas and blocks" do
       |end
     EOS
   end
+
+  describe "method call with a lambda" do
+    code <<-EOS.heredoc
+      |b -> 
+      |  1 + 2 + 3
+    EOS
+  
+    it_outputs_as <<-EOS.heredoc.chomp
+      |b do
+      |  1 + 2 + 3
+      |end
+    EOS
+  end
+
 end
