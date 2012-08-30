@@ -104,12 +104,14 @@ describe "Parsing class definitions" do
         |class Foo
         |  def bar
         |    baz
+        |    1 + 2.5 / 4 * 500
       EOS
     
       it_outputs_as <<-EOS.heredoc.chomp
         |class Foo
         |  def bar
         |    baz
+        |    1 + 2.5 / 4 * 500
         |  end
         |end
       EOS
