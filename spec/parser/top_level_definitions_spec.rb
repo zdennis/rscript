@@ -9,18 +9,25 @@ describe "Parsing class definitions" do
       |foo
       |bar
       |baz
+      |a = 5
+      |b = a + 6
     EOS
 
     it_outputs_as <<-EOS.heredoc.chomp
       |foo
       |bar
       |baz
+      |a = 5
+      |b = a + 6
     EOS
   end
 
   describe "top-level method definitions" do
     code <<-EOS.heredoc
       |def bar
+      |  a = 1
+      |  b = 3.5
+      |  c = a + b
       |
       |def baz
       |
@@ -31,6 +38,9 @@ describe "Parsing class definitions" do
   
     it_outputs_as <<-EOS.heredoc.chomp
       |def bar
+      |  a = 1
+      |  b = 3.5
+      |  c = a + b
       |end
       |
       |def baz

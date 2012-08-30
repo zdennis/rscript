@@ -53,7 +53,6 @@ module RScript::ParserExt
     
     def initialize
       @env = Environment.new
-      
     end
     
     def as_ruby(token)
@@ -103,6 +102,7 @@ module RScript::ParserExt
   end
   
   class Statements < Node
+    attr_reader :head, :tail  
 
     def initialize(head, tail=nil)
       super()
@@ -114,7 +114,7 @@ module RScript::ParserExt
     end
 
     def increment_indentation
-      [@head, @tail].flatten.compact.each{ |t| t.increment_indentation }
+      [@head, @tail].flatten.compact.each{ |t| t.increment_indentation } ; true
     end
     
     def to_ruby
@@ -160,17 +160,18 @@ module RScript::ParserExt
     end
 
     def increment_indentation
-      if @statement && !@statement.is_a?(Rvalue)
-        #puts "trying indenting #{@statement}"
+      if @statement && !@statement.is_a?(Rvalue) && !@statement.is_a?(Expression)
+        #puts "trying indenting #{as_ruby(@statement)}"
         @statement.increment_indentation
       else
-        #puts "indenting #{@statement} to #{env.indentation + 2}"
+        #puts "indenting #{as_ruby(@statement)} to #{env.indentation + 2}"
         env.indentation += 2
       end
+      true
     end
     
     def to_ruby
-      if @statement.is_a?(Rvalue)
+      if @statement.is_a?(Rvalue) || @statement.is_a?(Expression)
         space(@statement.to_ruby, env)
       else
         as_ruby(@statement)
@@ -183,7 +184,7 @@ module RScript::ParserExt
       super()
       @head, @op, @tail = head, op, tail
     end
-    
+
     def to_ruby
       Array.new.tap do |arr|
         arr << as_ruby(@head)
@@ -226,6 +227,7 @@ module RScript::ParserExt
     def increment_indentation
       env.indentation += 2
       [statements].flatten.compact.each{ |t| t.increment_indentation }      
+      true
     end
     
     def to_ruby
@@ -258,6 +260,7 @@ module RScript::ParserExt
       #puts "#{@name} is indenting to #{env.indentation + 2}"
       env.indentation += 2
       [statements].flatten.compact.each{ |t| t.increment_indentation }      
+      true
     end
 
     def to_ruby

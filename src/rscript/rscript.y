@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Method Indent Outdent Identifier Terminator Number
+  token Class Method Indent Outdent Identifier Terminator Number Assign
 
   prechigh
     left '**' '*' '/' '%'
@@ -24,6 +24,7 @@ body: line { result = Statement.new val[0] }
     | body line { result = Statements.new val[0], val[1] }
 
 line: expr { result = Statement.new val[0] }
+   | expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
 
 expr: arg { result = Rvalue.new(val[0]) }
    | klass
