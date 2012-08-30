@@ -20,10 +20,8 @@ program: none
       { result = Program.new val[1] }
     
 body: line { result = Statement.new val[0] }
-    #| body term line { result = Statements.new val[0], val[2] }
     | body term { result = Statements.new val[0], nil }
     | body line { result = Statements.new val[0], val[1] }
-#    | line line { result = Statements.new val[0], val[1]  }
 
 line: expr { result = Statement.new val[0] }
 
