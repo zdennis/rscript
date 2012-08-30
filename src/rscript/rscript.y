@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Method Indent Outdent Identifier Terminator Number Assign
+  token Class Method Indent Outdent Identifier Terminator Number Assign Lambda
 
   prechigh
     left '**' '*' '/' '%'
@@ -42,9 +42,12 @@ arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2]
    | arg '&'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '|'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | primary
+   | lambda
 
 primary: literal
    | Number
+
+lambda: Lambda term block { result = Block.new val[2] }
 
 literal: id
 

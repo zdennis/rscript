@@ -271,5 +271,26 @@ module RScript::ParserExt
       end.join("\n")
     end
   end
+
+  class Block < Node
+    def initialize(statements=nil)
+      @statements = statements
+      super()
+      if @statements
+        @statements.set_prev(env) 
+        @statements.increment_indentation
+      end
+    end
+
+    def to_ruby
+      puts @statements.inspect
+      Array.new.tap do |arr|
+        arr << space("-> do", env)
+        arr << as_ruby(@statements) if @statements
+        arr << space("end", env)
+      end.join("\n")
+    end
+
+  end
   
 end
