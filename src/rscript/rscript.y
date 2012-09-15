@@ -35,8 +35,8 @@ expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
    | assignment
    | arg
 
-assignment: expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
-   | expr Assign lambda { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
+assignment: expr Assign line { result = Assignment.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
+   | expr Assign lambda { result = Assignment.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
 
 arg: expr '+'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | expr '-'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }

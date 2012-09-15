@@ -134,8 +134,8 @@ class RScript::Lexer
       token operator, operator
     elsif SHIFT_OPERATORS.include?(operator)
       token :Shift, operator
-    elsif UNARY_OPERATORS.include?(operator) && (peek =~ NUMBER || peek =~ IDENTIFIER)
-      token :Unary, operator
+    # elsif UNARY_OPERATORS.include?(operator) && (peek =~ NUMBER || peek =~ IDENTIFIER)
+    #   token :Unary, operator
     elsif LAMBDA_OPERATORS.include?(operator)
       token :Lambda, operator
     elsif MODULE_SEPARATOR.include?(operator)

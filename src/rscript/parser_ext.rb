@@ -54,12 +54,20 @@ module RScript::ParserExt
     def initialize
       @env = Environment.new
     end
-    
+
     def as_ruby(token, options={})
-      return token.to_ruby(self, options) if Node === token
-      return token.tag if ::RScript::Lexer::Token === token
-      return nil if token.nil?
-      raise NotImplementedError, "Do not know how to convert #{token.inspect} to ruby"
+      str = case token
+            when Node
+              token.to_ruby(self, options)
+            when ::RScript::Lexer::Token
+              token.tag              
+            when nil
+              ""
+            else
+              raise NotImplementedError, "Do not know how to convert #{token.inspect} to ruby"        
+            end
+      str.sub!(/^(\s*)@/, '\1') if options[:omit_ivar_symbol]
+      str
     end
     
     def to_ruby(caller, options={})
@@ -147,9 +155,7 @@ module RScript::ParserExt
     end
 
     def to_ruby(caller, options={})
-      as_ruby(@token).tap do |str|
-        str.sub!(/^(\s*)@/, '\1') if options[:omit_ivar_symbol]
-      end
+      as_ruby(@token, :omit_ivar_symbol => options[:omit_ivar_symbol])
     end
 
     def identifier
@@ -186,10 +192,16 @@ module RScript::ParserExt
     
     def to_ruby(caller, options={})
       if @statement.is_a?(Rvalue) || @statement.is_a?(Expression)
-        space(@statement.to_ruby(self), env)
+        space(@statement.to_ruby(self, :omit_ivar_symbol => options[:omit_ivar_symbol]), env)
       else
         as_ruby(@statement)
       end
+    end
+  end
+
+  class Assignment < Statement
+    def lvalue
+      @statement.lvalue
     end
   end
   
@@ -199,9 +211,13 @@ module RScript::ParserExt
       @head, @op, @tail = head, op, tail
     end
 
+    def lvalue
+      return @head if @head.is_a?(Rvalue)
+    end
+
     def to_ruby(caller, options={})
       Array.new.tap do |arr|
-        arr << as_ruby(@head)
+        arr << as_ruby(@head, :omit_ivar_symbol => options[:omit_ivar_symbol])
         arr << @op.to_ruby(self)
         arr << as_ruby(@tail)
       end.join(" ")
@@ -328,6 +344,8 @@ module RScript::ParserExt
       if @parameter_list
         @parameter_list.items.each do |item|
           if item.is_a?(Rvalue) && item.identifier =~ /^(@(.*))$/
+            expansions[$1] = "#{$2}"
+          elsif item.is_a?(Assignment) && item.lvalue.identifier =~ /^(@(.*))$/
             expansions[$1] = "#{$2}"
           end
         end

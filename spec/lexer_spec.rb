@@ -510,11 +510,11 @@ describe RScript::Lexer do
             let(:code){ "#{operator}a" }
 
             it { should eq [
-              [:Unary, t(operator, 0)],
+              [operator, t(operator, 0)],
               [:Identifier, t("a", 0)]
             ]}
           end
-        end
+        end        
       end
     end
   end
