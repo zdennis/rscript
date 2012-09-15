@@ -191,6 +191,45 @@ describe "Parsing module definitions" do
     end
   end
 
+  describe "instance variables" do
+    describe "module-level" do
+      code <<-EOS.heredoc
+        |module Foo
+        |  @bar = 5
+        |  @foo
+      EOS
+    
+      it_outputs_as <<-EOS.heredoc.chomp
+        |module Foo
+        |  @bar = 5
+        |  @foo
+        |end
+      EOS
+    end
+
+    describe "instance-level" do
+      code <<-EOS.heredoc
+        |module Foo
+        |  def initialize(a, b)
+        |    @bar = a
+        |    @foo = b
+        |    @bar
+        |    @foo
+      EOS
+    
+      it_outputs_as <<-EOS.heredoc.chomp
+        |module Foo
+        |  def initialize(a, b)
+        |    @bar = a
+        |    @foo = b
+        |    @bar
+        |    @foo
+        |  end
+        |end
+      EOS
+    end
+  end
+
   describe "module method definitions" do
     describe "and no method body" do
       code <<-EOS.heredoc
@@ -224,5 +263,5 @@ describe "Parsing module definitions" do
       EOS
     end
   end
-  
+
 end  
