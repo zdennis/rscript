@@ -26,14 +26,14 @@ body: line { result = Statement.new val[0] }
 line: expr lambda { result = ExpressionWithBlock.new(val[0], val[1])}
    | expr { result = Statement.new val[0] }
 
-assignment: expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
-
 expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
    | assignment
    | arg
    | klass
    | module
    | method
+
+assignment: expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
 
 arg: expr '+'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | expr '-'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
