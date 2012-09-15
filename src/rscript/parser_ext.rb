@@ -303,6 +303,17 @@ module RScript::ParserExt
     end
   end
 
+  class List < Node
+    def initialize(*items)
+      super()
+      @items = items
+    end
+
+    def to_ruby(caller, options={})
+      @items.map{ |item| item.to_ruby(self) }.join(", ")
+    end
+  end
+
   class Block < Node
     def initialize(statements=nil)
       @statements = statements
