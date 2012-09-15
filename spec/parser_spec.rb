@@ -6,7 +6,7 @@ describe RScript::Parser do
     
   describe "empty program" do
     code ""
-    it { should eq "" }
+    it_outputs_as ""
   end
 
   describe "simple statement on a single line" do
@@ -14,10 +14,9 @@ describe RScript::Parser do
       |a
     EOS
     
-    it { should eq <<-EOS.heredoc.chomp
-        |a
-      EOS
-    }
+    it_outputs_as <<-EOS.heredoc.chomp
+      |a
+    EOS
   end
     
   describe "simple statements across multiple lines" do
@@ -27,12 +26,11 @@ describe RScript::Parser do
       |C
     EOS
     
-    it { should eq <<-EOS.heredoc.chomp
-        |a
-        |b
-        |C
-      EOS
-    }
+    it_outputs_as <<-EOS.heredoc.chomp
+      |a
+      |b
+      |C
+    EOS
   end
   
   describe "simple expression on a single line" do
@@ -40,10 +38,9 @@ describe RScript::Parser do
       |a + b
     EOS
     
-    it { should eq <<-EOS.heredoc.chomp
-        |a + b
-      EOS
-    }
+    it_outputs_as <<-EOS.heredoc.chomp
+      |a + b
+    EOS
   end
 
   describe "mathematical operators in a single expression on a single line" do
@@ -51,10 +48,9 @@ describe RScript::Parser do
       |a + b - c * d / e % f ** g
     EOS
     
-    it { should eq <<-EOS.heredoc.chomp
-        |a + b - c * d / e % f ** g
-      EOS
-    }
+    it_outputs_as <<-EOS.heredoc.chomp
+      |a + b - c * d / e % f ** g
+    EOS
   end
 
   describe "logic operators in a single expression on a single line" do
@@ -62,10 +58,9 @@ describe RScript::Parser do
       |a || b && c & d | e ^ f
     EOS
     
-    it { should eq <<-EOS.heredoc.chomp
-        |a || b && c & d | e ^ f
-      EOS
-    }
+    it_outputs_as <<-EOS.heredoc.chomp
+      |a || b && c & d | e ^ f
+    EOS
   end
 
 end
