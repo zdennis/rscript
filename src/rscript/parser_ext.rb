@@ -187,7 +187,7 @@ module RScript::ParserExt
       @head, @op, @tail = head, op, tail
     end
 
-    def to_ruby(caller, options={})      
+    def to_ruby(caller, options={})
       Array.new.tap do |arr|
         arr << as_ruby(@head)
         arr << @op.to_ruby(self)
@@ -197,10 +197,16 @@ module RScript::ParserExt
   end
 
   class MethodCall < Expression
-    def to_ruby(caller, options={})      
+    def to_ruby(caller, options={})
       Array.new.tap do |arr|
         arr << as_ruby(@head)
-        arr << @op.to_ruby(self)
+        if @op
+          arr << @op.to_ruby(self)
+        elsif !@tail.is_a?(ParentheticalExpression)
+          # only put a space if we're not dealing with parenthesis', 
+          # ie: foo 1, 2, 3 otherwise don't space, ie: foo(1, 2, 3)
+          arr << " "
+        end
         arr << as_ruby(@tail)
       end.join
     end

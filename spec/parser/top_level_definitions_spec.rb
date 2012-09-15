@@ -11,6 +11,10 @@ describe "Parsing class definitions" do
       |baz
       |a = 5
       |b = a + 6
+      |bar 1
+      |bar 1, 2, c, d
+      |bar(1,2, c,d)
+      |foo(a + b + c, 1 * 5, 8 / 4, 3 + (3 - d))
     EOS
 
     it_outputs_as <<-EOS.heredoc.chomp
@@ -19,6 +23,10 @@ describe "Parsing class definitions" do
       |baz
       |a = 5
       |b = a + 6
+      |bar 1
+      |bar 1, 2, c, d
+      |bar(1, 2, c, d)
+      |foo(a + b + c, 1 * 5, 8 / 4, 3 + (3 - d))
     EOS
   end
 
