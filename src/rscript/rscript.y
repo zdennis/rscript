@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator 
+  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator Comment HereComment
 
   prechigh
     left '**' '*' '/' '%'
@@ -26,6 +26,10 @@ body: line { result = Statement.new val[0] }
 line: expr { result = Statement.new val[0] }
    | definition
    | lambda
+   | comment
+
+comment: Comment { result = Comment.new(val[0]) } 
+   | HereComment { result = HereComment.new(val[0]) } 
 
 definition: klass
    | module

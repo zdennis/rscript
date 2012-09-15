@@ -61,6 +61,8 @@ module RScript::ParserExt
               token.to_ruby(self, options)
             when ::RScript::Lexer::Token
               token.tag              
+            when String
+              token
             when nil
               ""
             else
@@ -447,5 +449,25 @@ module RScript::ParserExt
     end
   end
 
+  class Comment < Node
+    def initialize(comment)
+      super()
+      @comment = comment
+    end
+
+    def to_ruby(caller, options={})
+      "##{as_ruby(@comment)}"
+    end
+  end
+
+  class HereComment < Comment
+    def to_ruby(caller, options={})
+      Array.new.tap do |arr|
+        @comment.tag.each_line do |line|
+          arr << "# #{as_ruby(line.strip)}"
+        end
+      end.join("\n") + "\n"
+    end    
+  end
   
 end
