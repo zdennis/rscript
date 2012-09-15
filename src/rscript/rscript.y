@@ -61,14 +61,14 @@ block: Indent Outdent
 module_separator_w_identifier: module_separator_w_identifier ModuleSeparator id  { result = [val[0], val[2]].flatten }
    | ModuleSeparator id { result = [val[1]] }
 
-klass: Class id module_separator_w_identifier term block { result = ClassDefinition.new(val[1], val[4], val[2]) }
-   | Class id module_separator_w_identifier term { result = ClassDefinition.new(val[1], nil, val[2]) }
+klass: Class id module_separator_w_identifier term block { result = ClassDefinition.new([val[1], val[2]], val[4], ) }
+   | Class id module_separator_w_identifier term { result = ClassDefinition.new([val[1],val[2]], nil) }
    | Class id term block { result = ClassDefinition.new(val[1], val[3]) }
    | Class id term { result = ClassDefinition.new(val[1], nil) }
    | Class id { result = ClassDefinition.new(val[1], nil) }
 
-module: Module id module_separator_w_identifier term block { result = ModuleDefinition.new(val[1], val[4], val[2]) }
-   | Module id module_separator_w_identifier term { result = ModuleDefinition.new(val[1], nil, val[2]) }
+module: Module id module_separator_w_identifier term block { result = ModuleDefinition.new([val[1],val[2]], val[4]) }
+   | Module id module_separator_w_identifier term { result = ModuleDefinition.new([val[1],val[2]], nil) }
    | Module id term block { result = ModuleDefinition.new(val[1], val[3]) }
    | Module id term { result = ModuleDefinition.new(val[1], nil) }
    | Module id { result = ModuleDefinition.new(val[1], nil) }
