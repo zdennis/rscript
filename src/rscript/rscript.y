@@ -23,13 +23,13 @@ body: line { result = Statement.new val[0] }
     | body term { result = Statements.new val[0], nil }
     | body line { result = Statements.new val[0], val[1] }
 
-line: assignment
-   | expr lambda { result = ExpressionWithBlock.new(val[0], val[1])}
+line: expr lambda { result = ExpressionWithBlock.new(val[0], val[1])}
    | expr { result = Statement.new val[0] }
 
 assignment: expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
 
 expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
+   | assignment
    | arg
    | klass
    | module
