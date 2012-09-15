@@ -23,32 +23,34 @@ body: line { result = Statement.new val[0] }
     | body term { result = Statements.new val[0], nil }
     | body line { result = Statements.new val[0], val[1] }
 
-line: expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
+line: assignment
    | expr lambda { result = ExpressionWithBlock.new(val[0], val[1])}
-   | expr { result = Statement.new val[0] }   
+   | expr { result = Statement.new val[0] }
 
-expr:
+assignment: expr Assign line { result = Statement.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
+
+expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
    | arg
    | klass
    | module
    | method
 
-arg:
-     '(' arg ')' arg { result = ParentheticalExpression.new val[1], val[3] }
-   | '(' arg ')'  { result = ParentheticalExpression.new val[1] }
-   | arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '-'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '**' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '*'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '/'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '%'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '^'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '||' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '&&' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '&'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | arg '|'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+arg: expr '+'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '-'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '**' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '*'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '/'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '%'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '^'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '||' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '&&' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '&'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '|'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | primary
    | lambda
+
+list: expr
+   | '(' expr ',' expr ')' { result = ParentheticalExpression.new val[1], val[3] }
 
 method_call: id lambda { MethodCall.new(id, block) }
 
@@ -82,6 +84,7 @@ method: Method id '.' id term block  { result = MethodDefinition.new([val[1], va
    | Method id '.' id { result = MethodDefinition.new([val[1], val[3]])}
    | Method id term block { result = MethodDefinition.new(val[1], val[3]) }
    | Method id term { result = MethodDefinition.new(val[1])}
+   | Method id list term { result = MethodDefinition.new(val[1], nil, val[2]) }
    | Method id { result = MethodDefinition.new(val[1])}
 
 id: Identifier { result = Rvalue.new(val[0]) }
@@ -109,6 +112,7 @@ none: { result = Nothing.new }
 #    @yydebug = true
     dprint "lexing..." 
     @q = RScript::Lexer.new.tokenize(str)
+#    puts @q.map(&:inspect)
     dputs "done"
     # @q.push [false, '$']   # is optional from Racc 1.3.7
     dputs

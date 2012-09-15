@@ -199,12 +199,14 @@ module RScript::ParserExt
   class ParentheticalExpression < Node
     def initialize(*expressions)
       super()
-      @expressions = expressions
+      @expressions = expressions.flatten
     end
 
     def to_ruby(caller, options={})
-      @expressions.map do |expr|
-        "(#{expr.to_ruby(self)})"
+      [].tap do |arr|
+        arr << "("
+        arr << @expressions.map { |expr| "#{expr.to_ruby(self)}" }.join(",")
+        arr << ")"
       end.join
     end
   end  
@@ -268,9 +270,10 @@ module RScript::ParserExt
   class MethodDefinition < Node
     attr_reader :statements
 
-    def initialize(name_parts, statements=nil)
+    def initialize(name_parts, statements=nil, parameter_list=nil)
       @name_parts = [name_parts].flatten
       @statements = statements
+      @parameter_list = parameter_list
       super()
       if @statements
         @statements.set_prev(env) 
@@ -291,6 +294,7 @@ module RScript::ParserExt
 
     def to_ruby(caller, options={})
       name = @name_parts.map{ |n| as_ruby(n) }.join(".")
+      name << "#{@parameter_list.to_ruby(self)}" if @parameter_list
       Array.new.tap do |arr|
         arr << space("def #{name}", env)
         arr << as_ruby(statements) if statements

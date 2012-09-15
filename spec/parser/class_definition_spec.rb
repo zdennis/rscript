@@ -117,11 +117,21 @@ describe "Parsing class definitions" do
       code <<-EOS.heredoc
         |class Foo
         |  def bar
+        |
+        |  def baz(a)
+        |
+        |  def bar(a,b)
       EOS
     
       it_outputs_as <<-EOS.heredoc.chomp
         |class Foo
         |  def bar
+        |  end
+        |
+        |  def baz(a)
+        |  end
+        |
+        |  def bar(a,b)
         |  end
         |end
       EOS
