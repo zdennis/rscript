@@ -218,6 +218,23 @@ describe RScript::Lexer do
         [:Terminator, t("\n", 4)]
       ]}
     end
+
+    context "multi line comment as the very last thing" do
+      let(:code){ 
+        <<-CODE.gsub(/ +\|/, '').chomp
+          |###
+          |foo
+          |bar
+          |###
+        CODE
+      }
+      
+      it { should eq [
+        [:HereComment, t("foo\nbar\n", 0)],
+        [:Terminator, t("\n", 0)],
+      ]}
+    end
+
   end
   
   describe "indentation" do

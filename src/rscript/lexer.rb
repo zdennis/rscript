@@ -22,7 +22,7 @@ class RScript::Lexer
                  (?:\\.[^\\"]*)*  # followed optionally by escaped dot any anything but escaped quote
                  "               
                  /mx
-  HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
+  HERE_COMMENT = /\A(###+\n(.*?)###\s*\n?)/m
   COMMENT      = /\A(#+([^\#]*))$/
   OPERATOR     = /\A 
                   (?: [+-\/*%]=                 # compound assignment
