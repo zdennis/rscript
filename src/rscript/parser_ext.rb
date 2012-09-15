@@ -77,6 +77,12 @@ module RScript::ParserExt
     def increment_indentation
     end
 
+    def indent(&block)
+      @env.indentation += 2
+      yield
+      @env.indentation -= 2
+    end
+
     def space(str, env)
       spacing = env.nil? ? 0 : env.indentation
       [" " * spacing, str].join
@@ -141,7 +147,13 @@ module RScript::ParserExt
     end
 
     def to_ruby(caller, options={})
-      as_ruby(@token)
+      as_ruby(@token).tap do |str|
+        str.sub!(/^(\s*)@/, '\1') if options[:omit_ivar_symbol]
+      end
+    end
+
+    def identifier
+      @token.tag
     end
   end
 
@@ -226,7 +238,7 @@ module RScript::ParserExt
         arr << ")"
       end.join
     end
-  end  
+  end
   
   class Operator < Node
     def initialize(op)
@@ -311,9 +323,28 @@ module RScript::ParserExt
 
     def to_ruby(caller, options={})
       name = @name_parts.map{ |n| as_ruby(n) }.join(".")
-      name << "#{@parameter_list.to_ruby(self)}" if @parameter_list
+
+      expansions = {}
+      if @parameter_list
+        @parameter_list.items.each do |item|
+          if item.is_a?(Rvalue) && item.identifier =~ /^(@(.*))$/
+            expansions[$1] = "#{$2}"
+          end
+        end
+
+        name << "#{@parameter_list.to_ruby(self)}"
+      end
+
+      
       Array.new.tap do |arr|
         arr << space("def #{name}", env)
+
+        expansions.each_pair do |ivar, param|
+          indent do
+            arr << space("#{ivar} = #{param}", env)
+          end
+        end
+
         arr << as_ruby(statements) if statements
         arr << space("end", env)
       end.join("\n")
@@ -321,13 +352,33 @@ module RScript::ParserExt
   end
 
   class List < Node
+    attr_reader :items
+
     def initialize(*items)
       super()
-      @items = items
+      @items = items.flatten
     end
 
     def to_ruby(caller, options={})
       @items.map{ |item| item.to_ruby(self) }.join(", ")
+    end
+  end
+
+  class ParameterList < List
+    def self.from_list(list)
+      if list.is_a?(List)
+        new(list.items)
+      else
+        new(list)
+      end
+    end
+
+    def to_ruby(caller, options={})
+      [].tap do |arr|
+        arr << "("
+        arr << @items.map { |param| "#{param.to_ruby(self, :omit_ivar_symbol => true)}" }.join(", ")
+        arr << ")"
+      end.join
     end
   end
 
