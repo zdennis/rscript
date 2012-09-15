@@ -191,6 +191,45 @@ describe "Parsing class definitions" do
     end
   end
 
+  describe "instance variables" do
+    describe "class-level" do
+      code <<-EOS.heredoc
+        |class Foo
+        |  @bar = 5
+        |  @foo
+      EOS
+    
+      it_outputs_as <<-EOS.heredoc.chomp
+        |class Foo
+        |  @bar = 5
+        |  @foo
+        |end
+      EOS
+    end
+
+    describe "instance-level" do
+      code <<-EOS.heredoc
+        |class Foo
+        |  def initialize(a, b)
+        |    @bar = a
+        |    @foo = b
+        |    @bar
+        |    @foo
+      EOS
+    
+      it_outputs_as <<-EOS.heredoc.chomp
+        |class Foo
+        |  def initialize(a, b)
+        |    @bar = a
+        |    @foo = b
+        |    @bar
+        |    @foo
+        |  end
+        |end
+      EOS
+    end
+  end
+
   describe "class method definitions" do
     describe "and no method body" do
       code <<-EOS.heredoc

@@ -37,6 +37,14 @@ describe RScript::Lexer do
       ]}
     end
 
+    describe "naming: starts @ symbol" do
+      let(:code) { "@a @boo" }
+      it { should eq [
+        [:Identifier, t("@a",   0)],
+        [:Identifier, t("@boo", 0)]
+      ]}
+    end
+
     describe "naming: cannot start with a number" do
       let(:code) { "9a" }
       it { should eq [

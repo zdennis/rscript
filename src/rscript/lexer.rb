@@ -4,7 +4,7 @@ require 'ruby-debug'
 #   [tag, value, lineNumber, attributes={}]
 #
 class RScript::Lexer
-  IDENTIFIER   = /\A([A-Za-z_]+[A-Za-z_0-9]*)/
+  IDENTIFIER   = /\A(@?[A-Za-z_]+[A-Za-z_0-9]*)/
   WHITESPACE   = /\A[^\n\S]+/
   MULTI_DENT   = /\A(?:\n[^\n\S]*)+/
   NUMBER       =  /\A

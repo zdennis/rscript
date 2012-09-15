@@ -89,6 +89,8 @@ method: Method id '.' id term block  { result = MethodDefinition.new([val[1], va
    | Method id '.' id { result = MethodDefinition.new([val[1], val[3]])}
    | Method id term block { result = MethodDefinition.new(val[1], val[3]) }
    | Method id term { result = MethodDefinition.new(val[1])}
+   | Method id '(' list ')' term { result = MethodDefinition.new val[1], nil, ParentheticalExpression.new(val[3]) }
+   | Method id '(' list ')' term block { result = MethodDefinition.new val[1], val[6], ParentheticalExpression.new(val[3]) }   
    | Method id list term { result = MethodDefinition.new(val[1], nil, val[2]) }
    | Method id { result = MethodDefinition.new(val[1])}
 
