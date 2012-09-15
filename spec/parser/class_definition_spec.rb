@@ -129,7 +129,12 @@ describe "Parsing class definitions" do
         |  def bar(a = 5 + 1)
         |
         |  def bar(a = (5 + 1) * 5)
+        |
         |  def bar(a = (5 + 1) * 5, b = 7 + foo)
+        |
+        |  def bar(a = self.foo)
+        |
+        |  def bar(a = self.foo, b = self.baz, c = bar, d = bang)
       EOS
     
       it_outputs_as <<-EOS.heredoc.chomp
@@ -156,6 +161,12 @@ describe "Parsing class definitions" do
         |  end
         |
         |  def bar(a = (5 + 1) * 5, b = 7 + foo)
+        |  end
+        |
+        |  def bar(a = self.foo)
+        |  end
+        |
+        |  def bar(a = self.foo, b = self.baz, c = bar, d = bang)
         |  end
         |end
       EOS

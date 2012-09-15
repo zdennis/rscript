@@ -187,13 +187,24 @@ module RScript::ParserExt
       @head, @op, @tail = head, op, tail
     end
 
-    def to_ruby(caller, options={})
+    def to_ruby(caller, options={})      
       Array.new.tap do |arr|
         arr << as_ruby(@head)
         arr << @op.to_ruby(self)
         arr << as_ruby(@tail)
       end.join(" ")
     end
+  end
+
+  class MethodCall < Expression
+    def to_ruby(caller, options={})      
+      Array.new.tap do |arr|
+        arr << as_ruby(@head)
+        arr << @op.to_ruby(self)
+        arr << as_ruby(@tail)
+      end.join
+    end
+
   end
 
   class ParentheticalExpression < Node

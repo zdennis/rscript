@@ -46,13 +46,12 @@ arg: expr '+'  expr { result = Expression.new val[0], Operator.new(val[1]), val[
    | expr '&&' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | expr '&'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | expr '|'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+   | expr '.'  expr { result = MethodCall.new val[0], Operator.new(val[1]), val[2] }
    | primary
    | lambda
 
 list: expr
    | expr ',' list { result = List.new val[0], val[2] }
-
-method_call: id lambda { MethodCall.new(id, block) }
 
 primary: literal
    | Number { result = Rvalue.new(val[0])}
