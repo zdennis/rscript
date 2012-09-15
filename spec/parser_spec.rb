@@ -66,10 +66,18 @@ describe RScript::Parser do
   describe "parenthetical expressions" do
     code <<-EOS.heredoc.chomp
       |(a + b) * 5 - (7 / 3)
+      |((a + b) * 5) - (7 / (3))
+      |(3)
+      |((4))
+      |(((((((((((((5)))))))))))))
     EOS
 
     it_outputs_as <<-EOS.heredoc.chomp
       |(a + b) * 5 - (7 / 3)
+      |((a + b) * 5) - (7 / (3))
+      |(3)
+      |((4))
+      |(((((((((((((5)))))))))))))
     EOS
   end
 

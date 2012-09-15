@@ -33,8 +33,9 @@ expr:
    | module
    | method
 
-arg: 
-    '(' arg ')' { result = ParentheticalExpression.new val[1] }
+arg:
+     '(' arg ')' arg { result = ParentheticalExpression.new val[1], val[3] }
+   | '(' arg ')'  { result = ParentheticalExpression.new val[1] }
    | arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '-'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '**' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
@@ -52,7 +53,7 @@ arg:
 method_call: id lambda { MethodCall.new(id, block) }
 
 primary: literal
-   | Number
+   | Number { result = Rvalue.new(val[0])}
 
 lambda: Lambda term block { result = Block.new val[2] }
 
