@@ -215,6 +215,7 @@ module RScript::ParserExt
     
     def initialize(name, statements=nil, name_components=nil)
       @name, @statements, @name_components = name, statements, name_components
+      @identifier = "class"      
       super()
       if @statements
         @statements.set_prev(env) 
@@ -235,12 +236,19 @@ module RScript::ParserExt
     def to_ruby(caller, options={})
       ruby_name = [@name, @name_components].compact.flatten.map{ |node| as_ruby(node) }.join("::")
       results = Array.new.tap do |arr|
-        arr << space("class #{ruby_name}", env)
+        arr << space("#{@identifier} #{ruby_name}", env)
         arr << as_ruby(statements) if statements
         arr << space("end", env)
       end.compact.join("\n")
       results
     end    
+  end
+
+  class ModuleDefinition < ClassDefinition
+    def initialize(*)
+      super
+      @identifier = "module"
+    end
   end
   
   class MethodDefinition < Node

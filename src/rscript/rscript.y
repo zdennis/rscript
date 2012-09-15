@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator
+  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator 
 
   prechigh
     left '**' '*' '/' '%'
@@ -29,6 +29,7 @@ line: expr Assign line { result = Statement.new Expression.new(val[0], Operator.
 
 expr: arg
    | klass
+   | module
    | method
 
 arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
@@ -65,6 +66,12 @@ klass: Class id module_separator_w_identifier term block { result = ClassDefinit
    | Class id term block { result = ClassDefinition.new(val[1], val[3]) }
    | Class id term { result = ClassDefinition.new(val[1], nil) }
    | Class id { result = ClassDefinition.new(val[1], nil) }
+
+module: Module id module_separator_w_identifier term block { result = ModuleDefinition.new(val[1], val[4], val[2]) }
+   | Module id module_separator_w_identifier term { result = ModuleDefinition.new(val[1], nil, val[2]) }
+   | Module id term block { result = ModuleDefinition.new(val[1], val[3]) }
+   | Module id term { result = ModuleDefinition.new(val[1], nil) }
+   | Module id { result = ModuleDefinition.new(val[1], nil) }
 
 method: Method id term block { result = MethodDefinition.new(val[1], val[3]) }
    | Method id term { result = MethodDefinition.new(val[1])}

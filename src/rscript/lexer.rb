@@ -49,6 +49,7 @@ class RScript::Lexer
   
   RESERVED_IDENTIFIER_TAGS = {
     class:  :Class,
+    module: :Module,
     def:    :Method,
     if:     :Conditional,
     unless: :Conditional,
