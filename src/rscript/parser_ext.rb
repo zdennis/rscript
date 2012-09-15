@@ -456,7 +456,7 @@ module RScript::ParserExt
     end
 
     def to_ruby(caller, options={})
-      "##{as_ruby(@comment)}"
+      "##{as_ruby(@comment)}\n"
     end
   end
 

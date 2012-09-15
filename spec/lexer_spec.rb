@@ -191,6 +191,22 @@ describe RScript::Lexer do
       ]}
     end
 
+    context "single line comment ending in spaces" do
+      let(:code){ "#foo         " }
+      
+      it { should eq [
+        [:Comment, t("foo", 0)]
+      ]}
+    end
+
+    context "single line comment containing #'s" do
+      let(:code){ "# foo # bar # baz" }
+      
+      it { should eq [
+        [:Comment, t(" foo # bar # baz", 0)]
+      ]}
+    end
+
     context "line ending with comment" do
       let(:code){ "foo # bar" }
 
@@ -216,6 +232,22 @@ describe RScript::Lexer do
         [:Terminator, t("\n", 0)],
         [:Identifier, t("baz", 4, newLine: true)],
         [:Terminator, t("\n", 4)]
+      ]}
+    end
+
+    context "multi line comment with spaces after it" do
+      let(:code){ 
+        <<-CODE.gsub(/ +\|/, '')
+          |######    
+          |foo
+          |bar
+          |######    
+        CODE
+      }
+      
+      it { should eq [
+        [:HereComment, t("foo\nbar\n", 0)],
+        [:Terminator, t("\n", 0)],
       ]}
     end
 
