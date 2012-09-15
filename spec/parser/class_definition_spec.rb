@@ -26,49 +26,77 @@ describe "Parsing class definitions" do
         |end
       EOS
     end
+  end
 
-    describe "nested class definition" do
-      code <<-EOS.heredoc
-        |class Foo
-        |  class Bar
-      EOS
-  
-      it_outputs_as <<-EOS.heredoc.chomp
-        |class Foo
-        |  class Bar
-        |  end
-        |end
-      EOS
-    end
+  describe "nested class definition" do
+    code <<-EOS.heredoc
+      |class Foo
+      |  class Bar
+    EOS
 
-    describe "multiple nested class definitions" do
-      code <<-EOS.heredoc
-        |class Foo
-        |  class Bar
-        |  class Cat
-        |
-        |class Fab
-        |  class Balloon
-        |    class Cat
-      EOS
-  
-      it_outputs_as <<-EOS.heredoc.chomp
-        |class Foo
-        |  class Bar
-        |  end
-        |
-        |  class Cat
-        |  end
-        |end
-        |
-        |class Fab
-        |  class Balloon
-        |    class Cat
-        |    end
-        |  end
-        |end
-      EOS
-    end
+    it_outputs_as <<-EOS.heredoc.chomp
+      |class Foo
+      |  class Bar
+      |  end
+      |end
+    EOS
+  end
+
+  describe "multiple nested class definitions" do
+    code <<-EOS.heredoc
+      |class Foo
+      |  class Bar
+      |  class Cat
+      |
+      |class Fab
+      |  class Balloon
+      |    class Cat
+    EOS
+
+    it_outputs_as <<-EOS.heredoc.chomp
+      |class Foo
+      |  class Bar
+      |  end
+      |
+      |  class Cat
+      |  end
+      |end
+      |
+      |class Fab
+      |  class Balloon
+      |    class Cat
+      |    end
+      |  end
+      |end
+    EOS
+  end
+
+  describe "nested class definitions with ::" do
+    code <<-EOS.heredoc
+      |class Foo::Bar
+      |
+      |class Foo::Bar::Baz::Bang
+      |  bar
+      |
+      |class Foo
+      |  class Bar::Baz::Bang
+      |    bar
+    EOS
+
+    it_outputs_as <<-EOS.heredoc.chomp
+      |class Foo::Bar
+      |end
+      |
+      |class Foo::Bar::Baz::Bang
+      |  bar
+      |end
+      |
+      |class Foo
+      |  class Bar::Baz::Bang
+      |    bar
+      |  end
+      |end
+    EOS
   end
 
   describe "class-level method call" do

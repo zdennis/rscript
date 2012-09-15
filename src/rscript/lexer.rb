@@ -35,6 +35,7 @@ class RScript::Lexer
                     | [=]                       # assignment
                     | \|\| | && | & | \| | \^   # logic
                     | \!                        # remainder of unary operators
+                    | ::                        # module separator
                   )/x
                  
   ASSIGNMENT_OPERATORS = %w( = )
@@ -44,6 +45,7 @@ class RScript::Lexer
   SHIFT_OPERATORS = %w( << >> )
   UNARY_OPERATORS = %w( - + ! )
   LAMBDA_OPERATORS = %w( -> )
+  MODULE_SEPARATOR = "::"
   
   RESERVED_IDENTIFIER_TAGS = {
     class:  :Class,
@@ -69,7 +71,7 @@ class RScript::Lexer
     process_next_chunk = -> { @chunk = code.slice(i..-1) ; @chunk != "" }
 
     while process_next_chunk.call
-      result = identifier_token() || 
+      result = identifier_token() ||
         whitespace_token() ||
         comment_token() ||
         line_token() ||
@@ -135,6 +137,8 @@ class RScript::Lexer
       token :Unary, operator
     elsif LAMBDA_OPERATORS.include?(operator)
       token :Lambda, operator
+    elsif MODULE_SEPARATOR.include?(operator)
+      token :ModuleSeparator, operator
     else
       token operator, operator
     end

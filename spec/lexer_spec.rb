@@ -564,5 +564,16 @@ describe RScript::Lexer do
     end
   end
   
+  describe "module ::" do
+    let(:code){ "Foo::Bar" }
+
+    it { should eq [
+      [:Identifier, t("Foo", 0)],
+      [:ModuleSeparator, t("::", 0)],
+      [:Identifier, t("Bar", 0)]
+    ]}
+
+  end
+
 end
 

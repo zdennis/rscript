@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Method Indent Outdent Identifier Terminator Number Assign Lambda
+  token Class Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator
 
   prechigh
     left '**' '*' '/' '%'
@@ -57,7 +57,12 @@ literal: id
 block: Indent Outdent
    | Indent body Outdent { result = Statements.new(val[1]) } #; pop_env val[2] ; }
 
-klass: Class id term block { result = ClassDefinition.new(val[1], val[3]) }
+module_separator_w_identifier: module_separator_w_identifier ModuleSeparator id  { result = [val[0], val[2]].flatten }
+   | ModuleSeparator id { result = [val[1]] }
+
+klass: Class id module_separator_w_identifier term block { result = ClassDefinition.new(val[1], val[4], val[2]) }
+   | Class id module_separator_w_identifier term { result = ClassDefinition.new(val[1], nil, val[2]) }
+   | Class id term block { result = ClassDefinition.new(val[1], val[3]) }
    | Class id term { result = ClassDefinition.new(val[1], nil) }
    | Class id { result = ClassDefinition.new(val[1], nil) }
 
