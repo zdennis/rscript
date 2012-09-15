@@ -145,4 +145,39 @@ describe "Parsing class definitions" do
       EOS
     end
   end
+
+  describe "class method definitions" do
+    describe "and no method body" do
+      code <<-EOS.heredoc
+        |class Foo
+        |  def self.bar
+      EOS
+    
+      it_outputs_as <<-EOS.heredoc.chomp
+        |class Foo
+        |  def self.bar
+        |  end
+        |end
+      EOS
+    end
+
+    describe "with simple body" do
+      code <<-EOS.heredoc
+        |class Foo
+        |  def self.bar
+        |    baz
+        |    1 + 2.5 / 4 * 500
+      EOS
+    
+      it_outputs_as <<-EOS.heredoc.chomp
+        |class Foo
+        |  def self.bar
+        |    baz
+        |    1 + 2.5 / 4 * 500
+        |  end
+        |end
+      EOS
+    end
+  end
+
 end  

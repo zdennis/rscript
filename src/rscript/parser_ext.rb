@@ -254,8 +254,9 @@ module RScript::ParserExt
   class MethodDefinition < Node
     attr_reader :statements
 
-    def initialize(name, statements=nil)
-      @name, @statements = name, statements
+    def initialize(name_parts, statements=nil)
+      @name_parts = [name_parts].flatten
+      @statements = statements
       super()
       if @statements
         @statements.set_prev(env) 
@@ -275,8 +276,9 @@ module RScript::ParserExt
     end
 
     def to_ruby(caller, options={})
+      name = @name_parts.map{ |n| as_ruby(n) }.join(".")
       Array.new.tap do |arr|
-        arr << space("def #{as_ruby(@name)}", env)
+        arr << space("def #{name}", env)
         arr << as_ruby(statements) if statements
         arr << space("end", env)
       end.join("\n")

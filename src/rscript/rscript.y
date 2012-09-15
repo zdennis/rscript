@@ -73,7 +73,10 @@ module: Module id module_separator_w_identifier term block { result = ModuleDefi
    | Module id term { result = ModuleDefinition.new(val[1], nil) }
    | Module id { result = ModuleDefinition.new(val[1], nil) }
 
-method: Method id term block { result = MethodDefinition.new(val[1], val[3]) }
+method: Method id '.' id term block  { result = MethodDefinition.new([val[1], val[3]], val[5]) }
+   | Method id '.' id term { result = MethodDefinition.new([val[1], val[3]])}
+   | Method id '.' id { result = MethodDefinition.new([val[1], val[3]])}
+   | Method id term block { result = MethodDefinition.new(val[1], val[3]) }
    | Method id term { result = MethodDefinition.new(val[1])}
    | Method id { result = MethodDefinition.new(val[1])}
 
