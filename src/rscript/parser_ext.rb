@@ -195,6 +195,17 @@ module RScript::ParserExt
       end.join(" ")
     end
   end
+
+  class ParentheticalExpression < Node
+    def initialize(expression)
+      super()
+      @expression = expression
+    end
+
+    def to_ruby(caller, options={})
+      "(#{@expression.to_ruby(self)})"
+    end
+  end  
   
   class Operator < Node
     def initialize(op)

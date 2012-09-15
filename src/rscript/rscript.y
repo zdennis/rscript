@@ -27,12 +27,15 @@ line: expr Assign line { result = Statement.new Expression.new(val[0], Operator.
    | expr lambda { result = ExpressionWithBlock.new(val[0], val[1])}
    | expr { result = Statement.new val[0] }   
 
-expr: arg
+expr:
+   | arg
    | klass
    | module
    | method
 
-arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+arg: 
+    '(' arg ')' { result = ParentheticalExpression.new val[1] }
+   | arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '-'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '**' arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | arg '*'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2] }
@@ -46,7 +49,7 @@ arg: arg '+'  arg { result = Expression.new val[0], Operator.new(val[1]), val[2]
    | primary
    | lambda
 
-method_call: id lambda { MethodCall.new(id, block)}
+method_call: id lambda { MethodCall.new(id, block) }
 
 primary: literal
    | Number
