@@ -89,6 +89,7 @@ method: Method id '.' id term block  { result = MethodDefinition.new([val[1], va
    | Method id '.' id { result = MethodDefinition.new([val[1], val[3]])}
    | Method id term block { result = MethodDefinition.new(val[1], val[3]) }
    | Method id term { result = MethodDefinition.new(val[1])}
+   | Method id '(' list ')' { result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]) }   
    | Method id '(' list ')' term { result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]) }
    | Method id '(' list ')' term block { result = MethodDefinition.new val[1], val[6], ParameterList.from_list(val[3]) }
    | Method id list term { result = MethodDefinition.new(val[1], nil, val[2]) }

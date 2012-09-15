@@ -4,6 +4,28 @@ describe "Parsing method definitions" do
   subject { ast.to_ruby }
   let(:ast){ RScript::Parser.new.parse(code) }
 
+  describe "last line is a single line definition with no args or body" do
+    code <<-EOS.heredoc.chomp
+      |def initialize
+    EOS
+
+    it_outputs_as <<-EOS.heredoc.chomp
+      |def initialize
+      |end
+    EOS
+  end
+
+  describe "last line is a single line definition with args but no body" do
+    code <<-EOS.heredoc.chomp
+      |def initialize(a)
+    EOS
+
+    it_outputs_as <<-EOS.heredoc.chomp
+      |def initialize(a)
+      |end
+    EOS
+  end
+
   describe "method definitions auto-assignment" do
     code <<-EOS.heredoc.chomp
       |def initialize(@a, @b)
