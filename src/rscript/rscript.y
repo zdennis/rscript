@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator Comment HereComment
+  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator Comment HereComment CompoundAssign
 
   prechigh
     left '**' '*' '/' '%'
@@ -42,19 +42,22 @@ expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
 assignment: expr Assign line { result = Assignment.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
    | expr Assign lambda { result = Assignment.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
 
-arg: expr '+'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '-'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '**' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '*'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '/'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '%'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '^'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '||' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '&&' expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '&'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
-   | expr '|'  expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
+arg: expr operator expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | method_call
    | primary
+
+operator: '+' 
+   | '-' 
+   | '**'
+   | '*' 
+   | '/' 
+   | '%' 
+   | '^' 
+   | '||'
+   | '&&'
+   | '&' 
+   | '|' 
+   | CompoundAssign
 
 method_call: expr '.'  expr { result = MethodCall.new val[0], Operator.new(val[1]), val[2] }
    | id list { result = MethodCall.new val[0], nil, val[1] }

@@ -81,4 +81,29 @@ describe RScript::Parser do
     EOS
   end
 
+  describe "compound assignments" do
+    code <<-EOS.heredoc.chomp
+      |a += 5
+      |b *= 6
+      |c /= 7
+      |d -= 11
+      |@a += 5
+      |@b *= 6
+      |@c /= 7
+      |@d -= 11
+    EOS
+
+    it_outputs_as <<-EOS.heredoc.chomp
+      |a += 5
+      |b *= 6
+      |c /= 7
+      |d -= 11
+      |@a += 5
+      |@b *= 6
+      |@c /= 7
+      |@d -= 11
+    EOS
+  end
+
+
 end
