@@ -8,12 +8,19 @@ describe "Parsing method definitions" do
     code <<-EOS.heredoc.chomp
       |def initialize(@a, @b)
       |
+      |def foo(@a, b, @c, d)
+      |
     EOS
 
     it_outputs_as <<-EOS.heredoc.chomp
       |def initialize(a, b)
       |  @a = a
       |  @b = b
+      |end
+      |
+      |def foo(a, b, c, d)
+      |  @a = a
+      |  @c = c
       |end
     EOS
   end

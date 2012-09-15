@@ -331,10 +331,8 @@ module RScript::ParserExt
             expansions[$1] = "#{$2}"
           end
         end
-
         name << "#{@parameter_list.to_ruby(self)}"
       end
-
       
       Array.new.tap do |arr|
         arr << space("def #{name}", env)
@@ -367,7 +365,23 @@ module RScript::ParserExt
   class ParameterList < List
     def self.from_list(list)
       if list.is_a?(List)
-        new(list.items)
+        items = []
+
+        # a List usually contains a head and tail, so 
+        # simulate recursively flattening this list through
+        # iteration
+        while list.is_a?(List)
+          items.concat([list.items.first])
+          if list.items[1].is_a?(List)
+            list = list.items[1]
+          elsif list.items[1]
+            items << list.items[1]
+            list = nil
+          else
+            list = nil
+          end
+        end
+        new(items)
       else
         new(list)
       end
