@@ -53,22 +53,24 @@ describe "Parsing class definitions" do
       |    class Cat
     EOS
 
-    it_outputs_as <<-EOS.heredoc.chomp
-      |class Foo
-      |  class Bar
-      |  end
-      |
-      |  class Cat
-      |  end
-      |end
-      |
-      |class Fab
-      |  class Balloon
-      |    class Cat
-      |    end
-      |  end
-      |end
-    EOS
+   it do
+    should eq <<-EOS.heredoc.chomp
+        |class Foo
+        |  class Bar
+        |  end
+        |
+        |  class Cat
+        |  end
+        |end
+        |
+        |class Fab
+        |  class Balloon
+        |    class Cat
+        |    end
+        |  end
+        |end
+      EOS
+    end
   end
 
   describe "nested class definitions with ::" do

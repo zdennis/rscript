@@ -134,7 +134,7 @@ module RScript::ParserExt
     end
     
     def to_ruby(caller, options={})
-      Array.new.tap do |arr|
+      str = Array.new.tap do |arr|
         arr << as_ruby(@head)
 
         case @tail
@@ -146,7 +146,8 @@ module RScript::ParserExt
           # assume we have a Lexer::Token
           arr << "" if @tail.tag == "\n"
         end
-      end.join("\n")
+      end.join "\n"
+      str
     end
   end
 
@@ -168,8 +169,9 @@ module RScript::ParserExt
   class Statement < Node
     attr_reader :statement
 
-    def initialize(statement)
+    def initialize(statement, comment=nil)
       super()
+      @comment = comment
       if statement.is_a?(Node)
         @statement = statement
       else
@@ -193,11 +195,12 @@ module RScript::ParserExt
     end
     
     def to_ruby(caller, options={})
-      if @statement.is_a?(Rvalue) || @statement.is_a?(Expression)
+      str = if @statement.is_a?(Rvalue) || @statement.is_a?(Expression)
         space(@statement.to_ruby(self, :omit_ivar_symbol => options[:omit_ivar_symbol]), env)
       else
         as_ruby(@statement)
       end
+      str.sub(/\n+$/, "\n")
     end
   end
 
@@ -220,7 +223,7 @@ module RScript::ParserExt
     def to_ruby(caller, options={})
       Array.new.tap do |arr|
         arr << as_ruby(@head, :omit_ivar_symbol => options[:omit_ivar_symbol])
-        arr << @op.to_ruby(self)
+        arr << @op.to_ruby(self) if @op
         arr << as_ruby(@tail)
       end.join(" ")
     end
@@ -240,7 +243,6 @@ module RScript::ParserExt
         arr << as_ruby(@tail)
       end.join
     end
-
   end
 
   class ParentheticalExpression < Node
@@ -301,6 +303,7 @@ module RScript::ParserExt
       results = Array.new.tap do |arr|
         arr << space("#{@identifier} #{name}", env)
         arr << as_ruby(statements) if statements
+        arr.last.chomp! if statements && statements.tail.is_a?(MethodDefinition)
         arr << space("end", env)
       end.compact.join("\n")
       results
@@ -317,10 +320,11 @@ module RScript::ParserExt
   class MethodDefinition < Node
     attr_reader :statements
 
-    def initialize(name_parts, statements=nil, parameter_list=nil)
+    def initialize(name_parts, statements=nil, parameter_list=nil, comment=nil)
       @name_parts = [name_parts].flatten
       @statements = statements
       @parameter_list = parameter_list
+      @comment = comment
       super()
       if @statements
         @statements.set_prev(env) 
@@ -329,7 +333,7 @@ module RScript::ParserExt
     end
 
     def block_statement?
-      true
+      @statements
     end
 
     def increment_indentation
@@ -354,17 +358,18 @@ module RScript::ParserExt
         name << "#{@parameter_list.to_ruby(self)}"
       end
       
-      Array.new.tap do |arr|
+     Array.new.tap do |arr|
         arr << space("def #{name}", env)
+        arr.last << " #{@comment.to_ruby(self, supressNewLine: true)}" if @comment
 
         expansions.each_pair do |ivar, param|
           indent do
             arr << space("#{ivar} = #{param}", env)
           end
         end
-
         arr << as_ruby(statements) if statements
         arr << space("end", env)
+        arr << "" if (@comment && @comment.newline?) || block_statement?
       end.join("\n")
     end
   end
@@ -455,18 +460,26 @@ module RScript::ParserExt
       @comment = comment
     end
 
+    def newline?
+      @comment.attrs[:newLine]
+    end
+
     def to_ruby(caller, options={})
-      "##{as_ruby(@comment)}\n"
+      "##{as_ruby(@comment)}".tap do |str|
+        str << "\n" if newline? && !options[:supressNewLine]
+      end
     end
   end
 
   class HereComment < Comment
     def to_ruby(caller, options={})
-      Array.new.tap do |arr|
+      str = Array.new.tap do |arr|
         @comment.tag.each_line do |line|
           arr << "# #{as_ruby(line.strip)}"
         end
-      end.join("\n") + "\n"
+      end.join("\n")
+      str << "\n" if @comment.attrs[:newLine]
+      str
     end    
   end
   

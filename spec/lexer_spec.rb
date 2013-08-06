@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe RScript::Lexer do
   subject { described_class.new(:infinite => 100).tokenize(code) }
-  
+
   def t(val, lineno, attrs={})
     RScript::Lexer::Token.new(val, lineno, attrs)
   end
-  
+
   describe "empty string" do
     let(:code) { "" }
     it { should eq [] }
@@ -70,16 +70,16 @@ describe RScript::Lexer do
         [:Identifier, t("a_b_c", 0)]
       ]}
     end
-    
+
     describe "single token on a single line" do
       let(:code) { "foo" }
-    
+
       it { should eq [[:Identifier, t("foo", 0)]] }
     end
-  
+
     describe "multiple tokens on a single line" do
       let(:code) { "foo bar baz" }
-    
+
       it { should eq [
         [:Identifier, t("foo", 0)],
         [:Identifier, t("bar", 0)],
@@ -89,7 +89,7 @@ describe RScript::Lexer do
 
     describe "multiple spaces are consumed between tokens" do
       let(:code) { "foo      bar     baz" }
-    
+
       it { should eq [
         [:Identifier, t("foo", 0)],
         [:Identifier, t("bar", 0)],
@@ -105,7 +105,7 @@ describe RScript::Lexer do
           |yaz
         CODE
       }
-    
+
       it { should eq [
         [:Identifier, t("foo", 0, newLine: true)],
         [:Terminator, t("\n",  0)],
@@ -116,7 +116,7 @@ describe RScript::Lexer do
         [:Terminator, t("\n",  2)]
       ]}
     end
-  
+
     describe "multiple new lines are consumed" do
       let(:code) {
         <<-CODE.gsub(/ +\|/, '')
@@ -126,7 +126,7 @@ describe RScript::Lexer do
           |bar
         CODE
       }
-    
+
       it { should eq [
         [:Identifier, t("foo", 0, newLine: true)],
         [:Terminator, t("\n",  0)],
@@ -138,17 +138,17 @@ describe RScript::Lexer do
 
   describe "whole, decimal, and exponential numbers" do
     let(:code){ "1 2.58 9e11" }
-    
+
     it { should eq [
       [:Number, t("1", 0)],
       [:Number, t("2.58", 0)],
       [:Number, t("9e11", 0)]
     ]}
   end
-  
+
   describe "single quoted strings" do
     let(:code){ %|'foo' 'bar' 'baz \\' yaz'| }
-    
+
     it { should eq [
       [:String, t("'foo'", 0)],
       [:String, t("'bar'", 0)],
@@ -158,7 +158,7 @@ describe RScript::Lexer do
 
   describe "multiline single quoted strings" do
     let(:code) { %|'foo\n  bar'| }
-    
+
     it { should eq [
       [:String, t("'foo\n  bar'", 0)]
     ]}
@@ -166,7 +166,7 @@ describe RScript::Lexer do
 
   describe "basic double quoted strings" do
     let(:code){ %|"foo" "bar" "baz \\" yaz"| }
-    
+
     it { should eq [
       [:String, t('"foo"', 0)],
       [:String, t('"bar"', 0)],
@@ -176,16 +176,16 @@ describe RScript::Lexer do
 
   describe "basic multiline double quoted strings" do
     let(:code) { %|"foo\n  bar"| }
-    
+
     it { should eq [
       [:String, t(%|"foo\n  bar"|, 0)]
     ]}
   end
-  
+
   describe "comments" do
     context "line starting with comment" do
       let(:code){ "#foo" }
-      
+
       it { should eq [
         [:Comment, t("foo", 0)]
       ]}
@@ -193,7 +193,7 @@ describe RScript::Lexer do
 
     context "single line comment ending in spaces" do
       let(:code){ "#foo         " }
-      
+
       it { should eq [
         [:Comment, t("foo", 0)]
       ]}
@@ -201,7 +201,7 @@ describe RScript::Lexer do
 
     context "single line comment containing #'s" do
       let(:code){ "# foo # bar # baz" }
-      
+
       it { should eq [
         [:Comment, t(" foo # bar # baz", 0)]
       ]}
@@ -215,9 +215,9 @@ describe RScript::Lexer do
         [:Comment, t(" bar", 0)]
       ]}
     end
-    
+
     context "multi line comment" do
-      let(:code){ 
+      let(:code){
         <<-CODE.gsub(/ +\|/, '')
           |###
           |foo
@@ -226,9 +226,9 @@ describe RScript::Lexer do
           |baz
         CODE
       }
-      
+
       it { should eq [
-        [:HereComment, t("foo\nbar\n", 0)],
+        [:HereComment, t("foo\nbar\n", 0, newLine: true)],
         [:Terminator, t("\n", 0)],
         [:Identifier, t("baz", 4, newLine: true)],
         [:Terminator, t("\n", 4)]
@@ -236,23 +236,23 @@ describe RScript::Lexer do
     end
 
     context "multi line comment with spaces after it" do
-      let(:code){ 
+      let(:code){
         <<-CODE.gsub(/ +\|/, '')
-          |######    
+          |######
           |foo
           |bar
-          |######    
+          |######
         CODE
       }
-      
+
       it { should eq [
-        [:HereComment, t("foo\nbar\n", 0)],
+        [:HereComment, t("foo\nbar\n", 0, newLine: true)],
         [:Terminator, t("\n", 0)],
       ]}
     end
 
     context "multi line comment as the very last thing" do
-      let(:code){ 
+      let(:code){
         <<-CODE.gsub(/ +\|/, '').chomp
           |###
           |foo
@@ -260,15 +260,15 @@ describe RScript::Lexer do
           |###
         CODE
       }
-      
+
       it { should eq [
-        [:HereComment, t("foo\nbar\n", 0)],
+        [:HereComment, t("foo\nbar\n", 0, newLine: true)],
         [:Terminator, t("\n", 0)],
       ]}
     end
 
   end
-  
+
   describe "indentation" do
     context "single scope" do
       let(:code){
@@ -278,7 +278,7 @@ describe RScript::Lexer do
           |  baz
         CODE
       }
-      
+
       it { should eq [
         [:Identifier, t("foo", 0, newLine: true)],
         [:Terminator, t("\n", 0)],
@@ -299,7 +299,7 @@ describe RScript::Lexer do
           |    baz
         CODE
       }
-      
+
       it { should eq [
         [:Identifier, t("foo", 0, newLine: true)],
         [:Terminator, t("\n", 0)],
@@ -330,7 +330,7 @@ describe RScript::Lexer do
           |add
         CODE
       }
-      
+
       it { should eq [
         [:Identifier, t("aaa", 0, newLine: true)],
         [:Terminator, t("\n", 0)],
@@ -370,7 +370,7 @@ describe RScript::Lexer do
   describe "operators" do
     describe "mathematical: + - * / %" do
       let(:code){ "1 + 2 - 3 * 4 / 5 % 6" }
-    
+
       it { should eq [
         [:Number, t("1", 0)],
         ["+", t("+", 0)],
@@ -389,17 +389,17 @@ describe RScript::Lexer do
     describe "mathematical to the power of: **" do
       context "no spaces" do
         let(:code){ "1**2" }
-      
+
         it { should eq [
           [:Number, t("1", 0)],
           ["**", t("**", 0)],
           [:Number, t("2", 0)]
         ]}
       end
-      
+
       context "with spaces" do
         let(:code){ "1 ** 2" }
-      
+
         it { should eq [
           [:Number, t("1", 0)],
           ["**", t("**", 0)],
@@ -418,7 +418,7 @@ describe RScript::Lexer do
             [pair.last, t(pair.last, 0)]
           ]}
         end
-      
+
         describe "nonempty pair: #{pair.join('...')}" do
           let(:code){ pair.join("1") }
 
@@ -477,7 +477,7 @@ describe RScript::Lexer do
       end
 
     end
- 
+
     describe "comparison" do
       %w( < <= == > >= != ).each do |operator|
         describe operator do
@@ -538,10 +538,10 @@ describe RScript::Lexer do
               [:Number, t("1", 0)]
             ]}
           end
-          
+
           context "with spaces" do
             let(:code){ "a #{operator} 1" }
-            
+
             it { should eq [
               [:Identifier, t("a", 0)],
               [:Shift, t(operator, 0)],
@@ -551,7 +551,7 @@ describe RScript::Lexer do
         end
       end
     end
-    
+
     describe "unary" do
       %w( - + ! ).each do |operator|
         describe operator do
@@ -563,7 +563,7 @@ describe RScript::Lexer do
               [:Identifier, t("a", 0)]
             ]}
           end
-        end        
+        end
       end
     end
   end
@@ -571,7 +571,7 @@ describe RScript::Lexer do
   describe "keywords" do
     describe "class" do
       let(:code){ "class Foo" }
-      
+
       it { should eq [
         [:Class, t("class", 0)],
         [:Identifier, t("Foo", 0)]
@@ -580,29 +580,29 @@ describe RScript::Lexer do
 
     describe "def" do
       let(:code){ "def foo" }
-      
+
       it { should eq [
         [:Method, t("def", 0)],
         [:Identifier, t("foo", 0)]
       ]}
     end
-    
+
     describe "conditionals" do
       %w( if unless else ).each do |keyword|
         describe keyword do
           let(:code){ keyword }
-        
+
           it { should eq [
             [:Conditional, t(keyword, 0)]
           ]}
         end
       end
     end
-    
+
     describe "lambda: ->" do
       context "anonymous block" do
         let(:code){ "->" }
-      
+
         it { should eq [
           [:Lambda, t("->", 0)]
         ]}
@@ -610,7 +610,7 @@ describe RScript::Lexer do
 
       context "after identifier" do
         let(:code){ "foo ->" }
-      
+
         it { should eq [
           [:Identifier, t("foo", 0)],
           [:Lambda, t("->", 0)]
@@ -620,7 +620,7 @@ describe RScript::Lexer do
 
     end
   end
-  
+
   describe "module ::" do
     let(:code){ "Foo::Bar" }
 

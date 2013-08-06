@@ -2,7 +2,7 @@
 #
 
 class RScript::Parser
-  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator Comment HereComment CompoundAssign
+  token Class Module Method Indent Outdent Identifier Terminator Number Assign Lambda ModuleSeparator Comment HereComment CompoundAssign Comparison String Conditional
 
   prechigh
     left '**' '*' '/' '%'
@@ -23,7 +23,8 @@ body: line { result = Statement.new val[0] }
     | body term { result = Statements.new val[0], nil }
     | body line { result = Statements.new val[0], val[1] }
 
-line: expr { result = Statement.new val[0] }
+line: expr comment { result = Statement.new Expression.new(val[0], nil, val[1]) }
+   | expr { result = Statement.new val[0] }
    | definition
    | lambda
    | comment
@@ -44,6 +45,7 @@ assignment: expr Assign line { result = Assignment.new Expression.new(val[0], Op
 
 arg: expr operator expr { result = Expression.new val[0], Operator.new(val[1]), val[2] }
    | method_call
+   | String
    | primary
 
 operator: '+' 
@@ -57,6 +59,7 @@ operator: '+'
    | '&&'
    | '&' 
    | '|' 
+   | Comparison
    | CompoundAssign
 
 method_call: expr '.'  expr { result = MethodCall.new val[0], Operator.new(val[1]), val[2] }
@@ -91,16 +94,19 @@ module: Module id module_separator_w_identifier term block { result = ModuleDefi
    | Module id term { result = ModuleDefinition.new(val[1], nil) }
    | Module id { result = ModuleDefinition.new(val[1], nil) }
 
-method: Method id '.' id term block  { result = MethodDefinition.new([val[1], val[3]], val[5]) }
-   | Method id '.' id term { result = MethodDefinition.new([val[1], val[3]])}
-   | Method id '.' id { result = MethodDefinition.new([val[1], val[3]])}
-   | Method id term block { result = MethodDefinition.new(val[1], val[3]) }
-   | Method id term { result = MethodDefinition.new(val[1])}
-   | Method id '(' list ')' { result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]) }   
-   | Method id '(' list ')' term { result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]) }
-   | Method id '(' list ')' term block { result = MethodDefinition.new val[1], val[6], ParameterList.from_list(val[3]) }
-   | Method id list term { result = MethodDefinition.new(val[1], nil, val[2]) }
-   | Method id { result = MethodDefinition.new(val[1])}
+method: Method id '.' id term block  {  puts "HERE1" ; result = MethodDefinition.new([val[1], val[3]], val[5]) }
+   | Method id '.' id term { puts "HERE2" ; result = MethodDefinition.new([val[1], val[3]])}
+   | Method id '.' id comment term { puts "HERE3" ; result = MethodDefinition.new([val[1], val[3]], nil, nil, val[4])}
+   | Method id '.' id comment { puts "HERE4" ; result = MethodDefinition.new([val[1], val[3]], nil, nil, val[4])}
+   | Method id term block { puts "HERE5" ; result = MethodDefinition.new(val[1], val[3]) }
+   | Method id term { puts "HERE6" ; result = MethodDefinition.new(val[1])}
+   | Method id '(' list ')' { puts "HERE7" ; result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]) }
+   | Method id '(' list ')' comment { puts "HERE7" ; result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]), val[5] }   
+   | Method id '(' list ')' term { puts "HERE8" ; result = MethodDefinition.new val[1], nil, ParameterList.from_list(val[3]) }
+   | Method id '(' list ')' term block { puts "HERE9" ; result = MethodDefinition.new val[1], val[6], ParameterList.from_list(val[3]) }
+   | Method id list term { puts "HERE10" ; result = MethodDefinition.new(val[1], nil, val[2]) }
+   | Method id comment { puts "HERE11" ; result = MethodDefinition.new(val[1], nil, nil, val[2])}
+   | Method id { puts "HERE12" ; result = MethodDefinition.new(val[1])}
 
 id: Identifier { result = Rvalue.new(val[0]) }
         
@@ -127,7 +133,7 @@ none: { result = Nothing.new }
 #    @yydebug = true
     dprint "lexing..." 
     @q = RScript::Lexer.new.tokenize(str)
-#    puts @q.map(&:inspect)
+    puts @q.map(&:inspect)
     dputs "done"
     # @q.push [false, '$']   # is optional from Racc 1.3.7
     dputs

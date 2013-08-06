@@ -1,5 +1,3 @@
-require 'ruby-debug'
-
 # Tokens are returned in the following structure:
 #   [tag, value, lineNumber, attributes={}]
 #
@@ -107,7 +105,7 @@ class RScript::Lexer
   def comment_token
     if md=HERE_COMMENT.match(@chunk)
       input, comment, body = md.to_a
-      token :HereComment, body
+      token :HereComment, body, :newLine => true
       token :Terminator, "\n"
       @line += count(comment, "\n")
       return comment.length
@@ -225,8 +223,8 @@ class RScript::Lexer
     input.length
   end
   
-  def token(tag, value)
-    @tokens.push [tag, Token.new(value, @line)]
+  def token(tag, value, attrs={})
+    @tokens.push [tag, Token.new(value, @line, attrs)]
   end
   
   class Token
