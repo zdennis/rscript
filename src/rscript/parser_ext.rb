@@ -132,15 +132,16 @@ module RScript::ParserExt
     def increment_indentation
       [@head, @tail].flatten.compact.each{ |t| t.increment_indentation } ; true
     end
-    
+
     def to_ruby(caller, options={})
       str = Array.new.tap do |arr|
         arr << as_ruby(@head)
 
+        arr.last << "\n" if @head.block_statement? && !arr.last.end_with?("\n")
+
         case @tail
         when nil # no-op
         when Node
-          arr << "" if @tail.block_statement?
           arr << as_ruby(@tail)
         else
           # assume we have a Lexer::Token
@@ -290,7 +291,7 @@ module RScript::ParserExt
 
     def block_statement?
       true
-    end    
+    end
 
     def increment_indentation
       env.indentation += 2
@@ -303,7 +304,10 @@ module RScript::ParserExt
       results = Array.new.tap do |arr|
         arr << space("#{@identifier} #{name}", env)
         arr << as_ruby(statements) if statements
-        arr.last.chomp! if statements && statements.tail.is_a?(MethodDefinition)
+
+        # don't have empty lines at the end of a class definition
+        arr.last.chomp!
+
         arr << space("end", env)
       end.compact.join("\n")
       results
@@ -333,7 +337,7 @@ module RScript::ParserExt
     end
 
     def block_statement?
-      @statements
+      true
     end
 
     def increment_indentation
