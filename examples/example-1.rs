@@ -36,7 +36,7 @@ words = "lorem ipsum"
 
 # class definitions
 class ParentClass
-  
+
 # class definitions with a parent class
 class SubClass < ParentClass
   class << self

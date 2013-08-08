@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+require File.expand_path(File.dirname(__FILE__) + "/../src/rscript")
+
+file = ARGV.shift
+
+abort "Must provide file to compile" unless file
+
+require 'pry'
+
+output_dir  = File.expand_path(File.dirname(file))
+output_name = File.basename(file).sub(/\.rs$/, '.rb')
+
+ruby_code = RScript::Parser.new.parse(IO.read(file)).to_ruby
+File.open(File.join(output_dir, output_name), "w") do |f|
+  f.puts ruby_code
+end
