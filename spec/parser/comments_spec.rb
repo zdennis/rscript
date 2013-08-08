@@ -20,7 +20,7 @@ describe "Parsing comments" do
     |###
   EOS
 
-  it_outputs_as <<-EOS.heredoc
+  it_outputs_as <<-EOS.heredoc.chomp
     |# single line comment
     |
     |# multiline

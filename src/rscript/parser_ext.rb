@@ -107,7 +107,7 @@ module RScript::ParserExt
     end
 
     def to_ruby(caller=nil)
-      @statements.to_ruby(self)
+      @statements.to_ruby(self).chomp
     end
   end
   
