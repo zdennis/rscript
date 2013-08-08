@@ -10,10 +10,11 @@ describe "Parsing class definitions" do
         |class Foo
       EOS
 
-      it_outputs_as <<-EOS.heredoc.chomp
-        |class Foo
-        |end
-      EOS
+      it { should eql <<-EOS.heredoc.chomp
+          |class Foo
+          |end
+        EOS
+      }
     end
 
     describe "and a trailing newline" do
@@ -21,10 +22,11 @@ describe "Parsing class definitions" do
         |class Foo
       EOS
       
-      it_outputs_as <<-EOS.heredoc.chomp
+      it { should eql <<-EOS.heredoc.chomp
         |class Foo
         |end
-      EOS
+        EOS
+      }
     end
   end
 
@@ -34,12 +36,13 @@ describe "Parsing class definitions" do
       |  class Bar
     EOS
 
-    it_outputs_as <<-EOS.heredoc.chomp
+    it { should eql <<-EOS.heredoc.chomp
       |class Foo
       |  class Bar
       |  end
       |end
-    EOS
+      EOS
+      }
   end
 
   describe "multiple nested class definitions" do
@@ -53,24 +56,24 @@ describe "Parsing class definitions" do
       |    class Cat
     EOS
 
-   it do
+   it {
     should eq <<-EOS.heredoc.chomp
-        |class Foo
-        |  class Bar
-        |  end
-        |
-        |  class Cat
-        |  end
-        |end
-        |
-        |class Fab
-        |  class Balloon
-        |    class Cat
-        |    end
-        |  end
-        |end
+      |class Foo
+      |  class Bar
+      |  end
+      |
+      |  class Cat
+      |  end
+      |end
+      |
+      |class Fab
+      |  class Balloon
+      |    class Cat
+      |    end
+      |  end
+      |end
       EOS
-    end
+    }
   end
 
   describe "nested class definitions with ::" do
@@ -85,7 +88,7 @@ describe "Parsing class definitions" do
       |    bar
     EOS
 
-    it_outputs_as <<-EOS.heredoc.chomp
+    it { should eql <<-EOS.heredoc.chomp
       |class Foo::Bar
       |end
       |
@@ -98,7 +101,8 @@ describe "Parsing class definitions" do
       |    bar
       |  end
       |end
-    EOS
+      EOS
+      }
   end
 
   describe "class-level method call" do
@@ -107,11 +111,13 @@ describe "Parsing class definitions" do
       |  bar
     EOS
   
-    it_outputs_as <<-EOS.heredoc.chomp
-      |class Foo
-      |  bar
-      |end
-    EOS
+    it { 
+      should eql <<-EOS.heredoc.chomp
+        |class Foo
+        |  bar
+        |end
+      EOS
+    }
   end
 
   describe "instance method definitions" do
@@ -139,7 +145,7 @@ describe "Parsing class definitions" do
         |  def bar(a = self.foo, b = self.baz, c = bar, d = bang)
       EOS
     
-      it_outputs_as <<-EOS.heredoc.chomp
+      it { should eql <<-EOS.heredoc.chomp
         |class Foo
         |  def bar
         |  end
@@ -171,7 +177,8 @@ describe "Parsing class definitions" do
         |  def bar(a = self.foo, b = self.baz, c = bar, d = bang)
         |  end
         |end
-      EOS
+        EOS
+      }
     end
 
     describe "with simple body" do
@@ -182,14 +189,15 @@ describe "Parsing class definitions" do
         |    1 + 2.5 / 4 * 500
       EOS
     
-      it_outputs_as <<-EOS.heredoc.chomp
+      it { should eql <<-EOS.heredoc.chomp
         |class Foo
         |  def bar
         |    baz
         |    1 + 2.5 / 4 * 500
         |  end
         |end
-      EOS
+        EOS
+      }
     end
   end
 
@@ -201,12 +209,13 @@ describe "Parsing class definitions" do
         |  @foo
       EOS
     
-      it_outputs_as <<-EOS.heredoc.chomp
+      it { should eql <<-EOS.heredoc.chomp
         |class Foo
         |  @bar = 5
         |  @foo
         |end
-      EOS
+        EOS
+      }
     end
 
     describe "instance-level" do
@@ -219,16 +228,17 @@ describe "Parsing class definitions" do
         |    @foo
       EOS
     
-      it_outputs_as <<-EOS.heredoc.chomp
-        |class Foo
-        |  def initialize(a, b)
-        |    @bar = a
-        |    @foo = b
-        |    @bar
-        |    @foo
-        |  end
-        |end
-      EOS
+      it { should eq <<-EOS.heredoc.chomp
+          |class Foo
+          |  def initialize(a, b)
+          |    @bar = a
+          |    @foo = b
+          |    @bar
+          |    @foo
+          |  end
+          |end
+          EOS
+       }
     end
   end
 
@@ -239,12 +249,13 @@ describe "Parsing class definitions" do
         |  def self.bar
       EOS
     
-      it_outputs_as <<-EOS.heredoc.chomp
+      it { should eql <<-EOS.heredoc.chomp
         |class Foo
         |  def self.bar
         |  end
         |end
-      EOS
+        EOS
+      }
     end
 
     describe "with simple body" do
@@ -255,14 +266,15 @@ describe "Parsing class definitions" do
         |    1 + 2.5 / 4 * 500
       EOS
     
-      it_outputs_as <<-EOS.heredoc.chomp
+      it { should eql <<-EOS.heredoc.chomp
         |class Foo
         |  def self.bar
         |    baz
         |    1 + 2.5 / 4 * 500
         |  end
         |end
-      EOS
+        EOS
+      }
     end
   end
 
