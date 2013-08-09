@@ -260,6 +260,22 @@ module RScript::ParserExt
       end.join
     end
   end
+
+  class ArrayExpression < Node
+    def initialize(*expressions)
+      super()
+      @expressions = expressions.flatten
+    end
+
+    def to_ruby(caller, options={})
+      [].tap do |arr|
+        arr << "["
+        arr << @expressions.map { |expr| "#{expr.to_ruby(self)}" }.join(",")
+        arr << "]"
+      end.join
+    end
+
+  end
   
   class Operator < Node
     def initialize(op)

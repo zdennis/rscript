@@ -37,8 +37,11 @@ definition: klass
    | method
 
 expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
+   | '[' list ']' { result = ArrayExpression.new val[1]}
+   | '[' ']' { result = ArrayExpression.new }
    | assignment
    | arg
+   | method_call
 
 assignment: expr Assign line { result = Assignment.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
    | expr Assign lambda { result = Assignment.new Expression.new(val[0], Operator.new(val[1]), val[2]) }
@@ -130,10 +133,10 @@ none: { result = Nothing.new }
   end
   
   def parse(str)
-#    @yydebug = true
+    @yydebug = true
     dprint "lexing..." 
     @q = RScript::Lexer.new.tokenize(str)
-    #puts @q.map(&:inspect)
+    puts @q.map(&:inspect)
     dputs "done"
     # @q.push [false, '$']   # is optional from Racc 1.3.7
     dputs
