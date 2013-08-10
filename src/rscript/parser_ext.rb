@@ -338,7 +338,7 @@ module RScript::ParserExt
   end
   
   class MethodDefinition < Node
-    attr_reader :statements
+    attr_accessor :statements, :comment, :parameter_list
 
     def initialize(name_parts, statements=nil, parameter_list=nil, comment=nil)
       @name_parts = [name_parts].flatten
