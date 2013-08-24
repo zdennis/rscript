@@ -2,6 +2,44 @@ module RScript::ParserExt
   def self.included(klass)
     klass.send :extend, ClassMethods
   end
+
+  class Item
+    def initialize(name, attrs={})
+      @name = name
+      @attrs = attrs
+    end
+
+    def set(name, value)
+      @attrs[:name] = value
+    end
+
+    def inspect(indent=0)
+      indent_str = "  " * indent
+      "(#{@name},".tap do |str|
+        @attrs.each_pair do |key, val|
+          str << "\n" + indent_str + "  "
+          if val.is_a?(self.class)
+            str << "#{key}: #{val.inspect(indent+1)}"
+          else
+            str << "#{key}: #{val.inspect}"
+          end
+        end
+        str << ")"
+      end
+    end
+
+    def to_s(indent=0)
+      "Item(#{@name})"
+    end
+
+    def to_str
+      to_s(indent)
+    end
+  end
+
+  def Item(name, attrs={})
+    Item.new name, attrs
+  end
   
   module ClassMethods
     def new_env(scoping_token=nil)
