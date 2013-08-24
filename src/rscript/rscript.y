@@ -18,7 +18,7 @@ rule
 program:
   { new_env }
   body
-  { result = Item(:program, value: val[1]) }
+  { result = Item(:program, left: val[1]) }
   
 body: top_statements
 
@@ -50,7 +50,6 @@ command_assignment: lvalue Assign command_assignment { result = Item(:assignment
   | lvalue Assign command_call { result = Item(:assignment, left: val[0], right: val[2]) }
   | lvalue Assign primary  { result = Item(:assignment, left: val[0], right: val[2]) }
 
-
 # 1 + 1
 # (2 + 3)
 # foo
@@ -63,8 +62,8 @@ expr:
   | expr And expr { result = Item(:and_conditional, left: val[0], right: val[2]) }
   | expr Or expr { result = Item(:or_conditional, left: val[0], right: val[2]) }
 #  | Not optional_newline expr { result = Item(:not, left: val[2]) }
+#  | lambda
   | arg
- # | lambda
 
 arg: lhs '=' arg { result = Item(:assignment, left: lhs, right: arg) }
   | primary
@@ -123,13 +122,13 @@ call_args: command
 
 lvalue: id
 
-comment: Comment { result = Item.new(:comment, value: val[0]) } 
-  | HereComment { result = Item.new(:hereComment, value: val[0]) } 
+comment: Comment { result = Item.new(:comment, left: val[0]) } 
+  | HereComment { result = Item.new(:hereComment, left: val[0]) } 
 
-lambda: Lambda term block { result = Item.new(:lambda, value: val[2]) } 
+lambda: Lambda term block { result = Item.new(:lambda, left: val[2]) } 
 
 block: Indent Outdent
-  | Indent body Outdent { result = Item.new(:block, value: val[1]) }  # pop_env?
+  | Indent body Outdent { result = Item.new(:block, left: val[1]) }  # pop_env?
 
 definition: klass
   | module
@@ -181,15 +180,15 @@ operator: '+'
    | CompoundAssign
 
 primary: literal
-   | Number { result = Item(:number, value: val[0]) }
+   | Number { result = Item(:number, left: val[0]) }
 
 literal: id
 
-id: Identifier { result = Item(:identifer, value: val[0]) }
+id: Identifier { result = Item(:identifer, left: val[0]) }
         
 term: Terminator
 
-none: { result = Item(:nothing, value: val[0]) }
+none: { result = Item(:nothing, left: val[0]) }
 
 
 # list_expr: '(' list ')' { result = ParentheticalExpression.new val[1] }
