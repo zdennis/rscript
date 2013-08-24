@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+require 'irb'
+require 'pp'
+
+ProjectRoot = Pathname.new File.join(File.dirname(__FILE__), "../src")
+GrammarFile = ProjectRoot.join("rscript/rscript.y")
+OutputFile  = ProjectRoot.join("rscript/parser.rb")
+
+def r
+  if Object.const_defined?(:RScript) && RScript.const_defined?(:Parser)
+    RScript.send :remove_const, :Parser
+    RScript.send :remove_const, :Lexer
+    RScript.send :remove_const, :ParserExt
+  end
+  print "compiling parser."
+  system %|racc #{GrammarFile} -v -t -o #{OutputFile}|
+  load File.expand_path(File.dirname(__FILE__) + "/../src/rscript.rb")
+end
+
+def c(str)
+  $results = RScript::Parser.new.parse(str)
+  puts $results.inspect
+  $results.to_s
+end
+
+r
+
+IRB.start
