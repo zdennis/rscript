@@ -51,7 +51,10 @@ class RScript::Lexer
     def:    :Method,
     if:     :Conditional,
     unless: :Conditional,
-    else:   :Conditional
+    else:   :Conditional,
+    and:    :And,
+    or:     :Or,
+    not:    :Not
   }
   
   def initialize(options={})
@@ -241,6 +244,10 @@ class RScript::Lexer
     
     def push(attrs)
       @attrs.merge! attrs
+    end
+
+    def inspect
+      "'#{tag}'"
     end
     
     def to_s
