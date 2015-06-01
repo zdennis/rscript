@@ -1,10 +1,8 @@
-require 'ruby-debug'
-
 # Tokens are returned in the following structure:
 #   [tag, value, lineNumber, attributes={}]
 #
 class RScript::Lexer
-  IDENTIFIER   = /\A([A-Za-z_]+)/
+  IDENTIFIER   = /\A(@?[A-Za-z_]+[A-Za-z_0-9]*)/
   WHITESPACE   = /\A[^\n\S]+/
   MULTI_DENT   = /\A(?:\n[^\n\S]*)+/
   NUMBER       =  /\A
@@ -22,17 +20,20 @@ class RScript::Lexer
                  (?:\\.[^\\"]*)*  # followed optionally by escaped dot any anything but escaped quote
                  "               
                  /mx
-  HERE_COMMENT = /\A(###+\n(.*?)###\s*\n)/m
-  COMMENT      = /\A(#+([^\#]*))$/
+  HERE_COMMENT = /\A(###+\s*\n(.*?)###+\s*\n?)/m
+  COMMENT      = /\A(#+(.*?)\s*)$/
   OPERATOR     = /\A 
                   (?: [+-\/*%]=                 # compound assignment
                     | \*\*                      # math to the power of
+                    | ->                        # lambda declaration
                     | [+-\/*%]                  # arithmetic
-                    | [\(\)]                    # parentheses
+                    | [\(\)] | [\[\]]           # parens, brackets
                     | << | >>                   # bit-shift
                     | != | <= | >= | == | < | > # comparison
                     | [=]                       # assignment
                     | \|\| | && | & | \| | \^   # logic
+                    | \!                        # remainder of unary operators
+                    | ::                        # module separator
                   )/x
                  
   ASSIGNMENT_OPERATORS = %w( = )
@@ -40,18 +41,28 @@ class RScript::Lexer
   COMPARISON_OPERATORS = %w( < <= == >= > != )
   LOGIC_OPERATORS = %w( || && | & ^ )
   SHIFT_OPERATORS = %w( << >> )
+  UNARY_OPERATORS = %w( - + ! )
+  LAMBDA_OPERATORS = %w( -> )
+  MODULE_SEPARATOR = "::"
   
-  IDENTIFIER_TAGS = {
-    class: :Class,
-    def:   :Method
+  RESERVED_IDENTIFIER_TAGS = {
+    class:  :Class,
+    module: :Module,
+    def:    :Method,
+    if:     :Conditional,
+    unless: :Conditional,
+    else:   :Conditional,
+    and:    :And,
+    or:     :Or,
+    not:    :Not
   }
   
   def initialize(options={})
-    @tokens = []
     @infinite = options[:infinite]
   end
   
   def tokenize(code)
+    @tokens = []
     @line = 0
     @indents = []
     @indent = 0
@@ -62,7 +73,7 @@ class RScript::Lexer
     process_next_chunk = -> { @chunk = code.slice(i..-1) ; @chunk != "" }
 
     while process_next_chunk.call
-      result = identifier_token() || 
+      result = identifier_token() ||
         whitespace_token() ||
         comment_token() ||
         line_token() ||
@@ -76,6 +87,9 @@ class RScript::Lexer
       i += result.to_i
     end
     
+    #token :Terminator, "\n" if @tokens.last && @tokens.last[0] != :Terminator
+    
+#    puts @tokens.inspect
     @tokens
   end
   
@@ -86,11 +100,15 @@ class RScript::Lexer
     content.scan(what).length
   end
   
+  def peek
+    @chunk[1]
+  end
+  
   # Matches single and multi-line comments.
   def comment_token
     if md=HERE_COMMENT.match(@chunk)
       input, comment, body = md.to_a
-      token :HereComment, body
+      token :HereComment, body, :newLine => true
       token :Terminator, "\n"
       @line += count(comment, "\n")
       return comment.length
@@ -114,11 +132,17 @@ class RScript::Lexer
     elsif COMPARISON_OPERATORS.include?(operator)
       token :Comparison, operator
     elsif LOGIC_OPERATORS.include?(operator)
-      token :Logic, operator
+      token operator, operator
     elsif SHIFT_OPERATORS.include?(operator)
       token :Shift, operator
+    # elsif UNARY_OPERATORS.include?(operator) && (peek =~ NUMBER || peek =~ IDENTIFIER)
+    #   token :Unary, operator
+    elsif LAMBDA_OPERATORS.include?(operator)
+      token :Lambda, operator
+    elsif MODULE_SEPARATOR.include?(operator)
+      token :ModuleSeparator, operator
     else
-      token :Operator, operator
+      token operator, operator
     end
     return operator.length
   end
@@ -126,7 +150,7 @@ class RScript::Lexer
   def identifier_token
     return nil unless md=IDENTIFIER.match(@chunk)
     input, id = md.to_a
-    tag = IDENTIFIER_TAGS[id.to_sym] || :Identifier
+    tag = RESERVED_IDENTIFIER_TAGS[id.to_sym] || :Identifier
     token tag, id
     input.length
   end
@@ -135,7 +159,7 @@ class RScript::Lexer
   def line_token
     return nil unless md = MULTI_DENT.match(@chunk)
 
-    @tokens.last.push newLine: true
+    @tokens.last.last.push newLine: true
     token :Terminator, "\n"
 
     indent = md.to_a[0]
@@ -177,7 +201,7 @@ class RScript::Lexer
     number.length
   end
   
-  # Matches single quoted strings
+  # Matches single and double quoted strings
   def string_token
     case @chunk[0]
     when "'"
@@ -202,7 +226,42 @@ class RScript::Lexer
     input.length
   end
   
-  def token(tag, value)
-    @tokens.push [tag, value, @line]
+  def token(tag, value, attrs={})
+    @tokens.push [tag, Token.new(value, @line, attrs)]
+  end
+  
+  class Token
+    include Comparable
+    include Term::ANSIColor
+    
+    attr_reader :tag, :lineno, :attrs
+    
+    def initialize(tag, lineno, attrs={})
+      @tag = tag
+      @lineno = lineno
+      @attrs = attrs
+    end
+    
+    def push(attrs)
+      @attrs.merge! attrs
+    end
+
+    def inspect
+      "'#{tag}'"
+    end
+    
+    def to_s
+      green("Token(#{tag.inspect} on #{lineno})")
+    end
+    
+    def length
+      to_s.length
+    end
+    
+    def <=>(other)
+      return -1 if self.class != other.class
+      return 0 if [tag, lineno, attrs] == [other.tag, other.lineno, other.attrs]
+      -1
+    end
   end
 end
